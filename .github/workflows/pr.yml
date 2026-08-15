@@ -17,7 +17,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
       - name: Prepare pinned SwiftLint in the ephemeral runner
@@ -36,7 +36,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
       - name: Verify toolchain
@@ -49,18 +49,23 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
       - name: Verify toolchain
         run: scripts/verify-ci-toolchain.sh
       - name: Build release app
         run: scripts/build.sh Release
+      - name: Archive unsigned app
+        run: >-
+          ditto -c -k --sequesterRsrc --keepParent
+          '.build/DerivedData/Build/Products/Release/T1 Plus Touchpad Support for macOS.app'
+          .build/T1PlusApp.zip
       - name: Upload unsigned app
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: unsigned-app
-          path: .build/DerivedData/Build/Products/Release/T1 Plus Touchpad Support for macOS.app
+          path: .build/T1PlusApp.zip
           if-no-files-found: error
           retention-days: 1
 
@@ -70,7 +75,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
       - name: Download unsigned app
@@ -78,5 +83,9 @@ jobs:
         with:
           name: unsigned-app
           path: .build/artifacts
+      - name: Extract unsigned app
+        run: |
+          mkdir -p .build/artifacts/extracted
+          ditto -x -k .build/artifacts/T1PlusApp.zip .build/artifacts/extracted
       - name: Verify app package
-        run: scripts/test-app-package.sh .build/artifacts
+        run: scripts/test-app-package.sh .build/artifacts/extracted

@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: read
-  contents: read
+  actions: read # Zizmor uses workflow metadata for online audits.
+  contents: read # Checkout and Gitleaks read the repository history.
 
 concurrency:
   group: security-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out complete history
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
           persist-credentials: false

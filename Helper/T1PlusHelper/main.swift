@@ -1,3 +1,1 @@
-import Darwin
-
-exit(EXIT_SUCCESS)
+// The helper remains inert until service startup is implemented.
