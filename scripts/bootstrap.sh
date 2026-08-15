@@ -5,7 +5,7 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 root=$(cd "$script_dir/.." && pwd)
 cd "$root"
 
-# shellcheck source=../Tools/versions.env
+# shellcheck source=Tools/versions.env
 source Tools/versions.env
 
 require_version() {

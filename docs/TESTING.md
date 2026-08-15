@@ -20,7 +20,9 @@ Homebrew environment.
 
 Pull requests use stable checks for formatting/linting, release building, core tests, app-package
 tests, and security/workflow analysis. GitHub-hosted macOS 26 runners supply stable Xcode 26.6 and
-SwiftLint 0.65.0; workflows assert those versions before trusting results.
+swift format 6.3.0. The lint job downloads the official SwiftLint 0.65.0 portable release into its
+ephemeral repository build directory, verifies its SHA-256 digest, and asserts its version. CI
+does not modify a developer machine or install SwiftLint globally.
 
 ## Hardware boundary
 
