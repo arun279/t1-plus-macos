@@ -8,10 +8,12 @@
 
 ## Core bake-off
 
-- curate sanitized NDJSON fixtures
-- implement gesture recognition against the language-neutral fixtures
-- benchmark Swift and the C reference with identical release inputs
-- select the production core by latency, allocation, memory, safety, and maintainability evidence
+- complete: implement the pure Swift semantic gesture engine
+- complete: verify exact output-sequence parity on the valid private hardware corpus
+- complete: benchmark Swift and optimized C with identical release inputs
+- complete: select Swift for the production core in
+  [ADR 0001](decisions/0001-use-swift-for-the-gesture-core.md)
+- pending: curate sanitized public NDJSON fixtures before publishing raw trace data
 
 ## Functional application
 

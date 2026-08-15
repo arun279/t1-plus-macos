@@ -32,9 +32,10 @@ emits semantic actions without importing AppKit, SwiftUI, IOKit, or CoreGraphics
 in the helper. This boundary keeps captures and replay tests independent of the UI and output
 backend.
 
-The hot path accepts `UnsafeRawBufferPointer`, stores four contacts inline, and performs no heap
-allocation per frame. Performance acceptance is measured with release builds and saved captures;
-language choice remains evidence-based.
+The hot path accepts `UnsafeRawBufferPointer`, stores four contacts inline, and creates no per-frame
+collection. Gesture actions flow through a generic sink without UI or macOS-framework coupling.
+[ADR 0001](decisions/0001-use-swift-for-the-gesture-core.md) records the Swift-versus-C evidence
+and the decision to use Swift. Integrated helper performance remains a release gate.
 
 ## Backend evolution
 

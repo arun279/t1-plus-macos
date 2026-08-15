@@ -31,5 +31,11 @@ gestures. Changes that affect the helper or gesture behavior require a physical 
 record before merge. Releases additionally require reconnect, soak, uninstall, rollback, and
 Windows-preservation checks.
 
-Automated replay proves deterministic behavior for captured input. It does not replace real-user
+The production engine is covered by deterministic synthetic tests for pointer motion, taps,
+double-click, tap-drag, secondary click, scrolling and phases, direction inversion, pinch, contact-ID
+retention, multi-finger actions, configuration bounds, and output-state cleanup. Private hardware
+replay established exact action-sequence parity with the reference engine across 15 valid traces and
+14,729 frames. Raw user captures are not distributed until explicitly curated and sanitized.
+
+Automated replay proves deterministic behavior for its inputs. It does not replace real-user
 operation of the signed application on a non-headless Mac.
