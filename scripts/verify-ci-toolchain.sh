@@ -8,7 +8,10 @@ cd "$root"
 # shellcheck source=../Tools/versions.env
 source Tools/versions.env
 
-[[ $(xcodebuild -version | head -n 1) == "Xcode $XCODE_VERSION" ]]
+xcode_output=$(xcodebuild -version)
+xcode_version=${xcode_output%%$'\n'*}
+
+[[ $xcode_version == "Xcode $XCODE_VERSION" ]]
 [[ $(swift format --version) == "$SWIFT_FORMAT_VERSION" ]]
 [[ $(swiftlint version) == "$SWIFTLINT_VERSION" ]]
 

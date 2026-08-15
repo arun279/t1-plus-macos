@@ -22,7 +22,7 @@ if [[ $mode == all || $mode == swift ]]; then
 fi
 
 if [[ $mode == all || $mode == portable ]]; then
-  shellcheck scripts/*.sh .githooks/*
+  shellcheck -x scripts/*.sh .githooks/*
   shfmt -d -i 2 -ci -sr scripts .githooks
   actionlint
 fi
