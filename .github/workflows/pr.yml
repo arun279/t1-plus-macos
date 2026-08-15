@@ -1,0 +1,78 @@
+name: Pull request
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality / format-lint
+    runs-on: macos-26
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          persist-credentials: false
+      - name: Verify toolchain
+        run: scripts/verify-ci-toolchain.sh
+      - name: Check Swift formatting and lint
+        run: scripts/lint.sh swift
+      - name: Check unused declarations and imports
+        run: scripts/deadcode.sh
+
+  core-tests:
+    name: test / core
+    runs-on: macos-26
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          persist-credentials: false
+      - name: Verify toolchain
+        run: scripts/verify-ci-toolchain.sh
+      - name: Test core
+        run: scripts/test.sh
+
+  build:
+    name: build / macos
+    runs-on: macos-26
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          persist-credentials: false
+      - name: Verify toolchain
+        run: scripts/verify-ci-toolchain.sh
+      - name: Build release app
+        run: scripts/build.sh Release
+      - name: Upload unsigned app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unsigned-app
+          path: .build/DerivedData/Build/Products/Release/T1 Plus Touchpad Support for macOS.app
+          if-no-files-found: error
+          retention-days: 1
+
+  app-package:
+    name: test / app-package
+    needs: build
+    runs-on: macos-26
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.0
+        with:
+          persist-credentials: false
+      - name: Download unsigned app
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: unsigned-app
+          path: .build/artifacts
+      - name: Verify app package
+        run: scripts/test-app-package.sh .build/artifacts
