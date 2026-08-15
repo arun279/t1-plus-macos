@@ -9,7 +9,7 @@ while IFS= read -r -d '' path; do
   swift_files+=("$path")
 done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.swift')
 
-if (( ${#swift_files[@]} > 0 )); then
+if ((${#swift_files[@]} > 0)); then
   swift format format --configuration .swift-format --in-place --parallel "${swift_files[@]}"
   git add -- "${swift_files[@]}"
   swift format lint --configuration .swift-format --strict "${swift_files[@]}"
@@ -21,10 +21,10 @@ while IFS= read -r -d '' path; do
   shell_files+=("$path")
 done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.sh' '.githooks/*')
 
-if (( ${#shell_files[@]} > 0 )); then
+if ((${#shell_files[@]} > 0)); then
   shfmt -w -i 2 -ci -sr "${shell_files[@]}"
   git add -- "${shell_files[@]}"
-  shellcheck "${shell_files[@]}"
+  shellcheck -x "${shell_files[@]}"
 fi
 
 git diff --cached --check

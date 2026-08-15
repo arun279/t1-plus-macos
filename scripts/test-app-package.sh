@@ -16,7 +16,7 @@ info_plist="$app_path/Contents/Info.plist"
 helper_path="$app_path/Contents/Library/LoginItems/T1PlusHelper.app"
 
 [[ $(plutil -extract CFBundleIdentifier raw "$info_plist") == io.github.arun279.t1plus ]]
-[[ $(plutil -extract CFBundleShortVersionString raw "$info_plist") == "$(<VERSION)" ]]
+[[ $(plutil -extract CFBundleShortVersionString raw "$info_plist") == "$(< VERSION)" ]]
 [[ -x "$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS" ]]
 [[ -d $helper_path ]]
 [[ $(plutil -extract CFBundleIdentifier raw "$helper_path/Contents/Info.plist") == io.github.arun279.t1plus.helper ]]

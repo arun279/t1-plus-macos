@@ -52,6 +52,15 @@ line_length:
   ignores_comments: true
   ignores_urls: true
 
+identifier_name:
+  excluded:
+    - id
+    - x
+    - y
+
+trailing_comma:
+  mandatory_comma: true
+
 type_body_length:
   warning: 250
   error: 350
