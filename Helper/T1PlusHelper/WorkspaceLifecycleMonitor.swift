@@ -57,23 +57,28 @@ final class WorkspaceLifecycleMonitor: NSObject {
     started = false
   }
 
-  @objc private func systemWillSleep(_: Notification) {
+  @objc
+  private func systemWillSleep(_: Notification) {
     onSuspend("system sleep")
   }
 
-  @objc private func systemWillPowerOff(_: Notification) {
+  @objc
+  private func systemWillPowerOff(_: Notification) {
     onSuspend("system power off")
   }
 
-  @objc private func sessionDidResign(_: Notification) {
+  @objc
+  private func sessionDidResign(_: Notification) {
     onSuspend("session inactive")
   }
 
-  @objc private func systemDidWake(_: Notification) {
+  @objc
+  private func systemDidWake(_: Notification) {
     onResume("system wake")
   }
 
-  @objc private func sessionDidBecomeActive(_: Notification) {
+  @objc
+  private func sessionDidBecomeActive(_: Notification) {
     onResume("session active")
   }
 }

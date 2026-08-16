@@ -32,9 +32,9 @@ for architectures in "$app_architectures" "$helper_architectures"; do
 done
 
 undefined_symbols=$(nm -u "$helper_executable")
-if [[ $undefined_symbols == *IOHIDDeviceSetReport* \
-  || $undefined_symbols == *IOHIDDeviceSetValue* \
-  || $undefined_symbols == *IOHIDTransactionCommit* ]]; then
+if [[ $undefined_symbols == *IOHIDDeviceSetReport* ||
+  $undefined_symbols == *IOHIDDeviceSetValue* ||
+  $undefined_symbols == *IOHIDTransactionCommit* ]]; then
   printf 'error: embedded helper links a forbidden HID write API\n' >&2
   exit 1
 fi

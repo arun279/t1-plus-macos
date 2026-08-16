@@ -174,6 +174,8 @@ private func t1DeviceRemovedCallback(
   Unmanaged<T1HIDInput>.fromOpaque(context).takeUnretainedValue().didRemove(device: device)
 }
 
+// The callback signature is fixed by IOHIDReportCallback's C ABI.
+// swiftlint:disable:next function_parameter_count
 private func t1InputReportCallback(
   context: UnsafeMutableRawPointer?,
   result: IOReturn,

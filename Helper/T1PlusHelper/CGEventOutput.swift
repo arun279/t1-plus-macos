@@ -121,6 +121,8 @@ final class CGEventOutput: T1GestureActionSink {
     }
   }
 
+  // This exhaustive switch is a static key mapping, not branching gesture policy.
+  // swiftlint:disable:next cyclomatic_complexity
   private func postShortcut(_ shortcut: T1Shortcut) {
     let keyAndFlags: (CGKeyCode, CGEventFlags)
     switch shortcut {
