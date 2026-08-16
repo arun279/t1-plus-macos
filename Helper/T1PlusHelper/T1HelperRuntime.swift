@@ -1,5 +1,6 @@
 import CoreGraphics
 import Dispatch
+import Foundation
 import IOKit.hid
 import T1Gestures
 import T1Protocol
@@ -7,7 +8,7 @@ import T1Settings
 
 import struct OSLog.Logger
 
-final class T1HelperRuntime: T1HIDInputDelegate {
+final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
   private let logger = Logger(subsystem: "io.github.arun279.t1plus", category: "helper")
   private var output = CGEventOutput()
   private lazy var input = T1HIDInput(delegate: self)
@@ -42,9 +43,13 @@ final class T1HelperRuntime: T1HIDInputDelegate {
     engine.configuration = T1SettingsStore.load().gestureConfiguration
     guard input.start() else { return false }
 
-    settingsObserver = T1SettingsObserver { [weak self] in
-      self?.reloadSettings()
-    }
+    settingsObserver = T1SettingsObserver()
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(settingsDidChange),
+      name: T1SettingsObserver.changedNotification,
+      object: nil
+    )
     lifecycle.start()
     installSignalSources()
     started = true
@@ -58,6 +63,11 @@ final class T1HelperRuntime: T1HIDInputDelegate {
 
   func stop() {
     guard started else { return }
+    NotificationCenter.default.removeObserver(
+      self,
+      name: T1SettingsObserver.changedNotification,
+      object: nil
+    )
     settingsObserver = nil
     input.stop()
     releaseOutputState(reason: "helper stop")
@@ -109,6 +119,10 @@ final class T1HelperRuntime: T1HIDInputDelegate {
   private func requestStop() {
     stop()
     CFRunLoopStop(CFRunLoopGetMain())
+  }
+
+  @objc private func settingsDidChange(_: Notification) {
+    reloadSettings()
   }
 
   private func reloadSettings() {

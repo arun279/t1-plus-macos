@@ -135,8 +135,7 @@ struct SupportView: View {
     }
   }
 
-  @ViewBuilder
-  private var error: some View {
+  @ViewBuilder private var error: some View {
     if let errorMessage = model.errorMessage {
       Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
         .font(.callout)

@@ -36,7 +36,7 @@ struct T1SettingsTests {
     #expect(loaded.tapsEnabled == false)
     #expect(loaded.pointerGain == T1Settings.pointerGainRange.lowerBound)
 
-    defaults.removeObject(forKey: "settings")
+    defaults.removeObject(forKey: T1SettingsStore.settingsKey)
     #expect(T1SettingsStore.load(from: defaults) == T1Settings())
   }
 
@@ -48,10 +48,17 @@ struct T1SettingsTests {
     defaults.set(
       Data(
         """
-        {"version":2,"tapsEnabled":false,"gesturesEnabled":false,"invertScroll":true,"pointerGain":2,"scrollGain":2}
+        {
+          "version": 2,
+          "tapsEnabled": false,
+          "gesturesEnabled": false,
+          "invertScroll": true,
+          "pointerGain": 2,
+          "scrollGain": 2
+        }
         """.utf8
       ),
-      forKey: "settings"
+      forKey: T1SettingsStore.settingsKey
     )
 
     #expect(T1SettingsStore.load(from: defaults) == T1Settings())
@@ -62,14 +69,27 @@ struct T1SettingsTests {
     let suiteName = "io.github.arun279.t1plus.tests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suiteName))
     defer { defaults.removePersistentDomain(forName: suiteName) }
-    var changeCount = 0
-    let observer = T1SettingsObserver(defaults: defaults) {
-      changeCount += 1
-    }
+    let recorder = SettingsChangeRecorder()
+    NotificationCenter.default.addObserver(
+      recorder,
+      selector: #selector(SettingsChangeRecorder.recordChange),
+      name: T1SettingsObserver.changedNotification,
+      object: nil
+    )
+    defer { NotificationCenter.default.removeObserver(recorder) }
+    let observer = T1SettingsObserver(defaults: defaults)
 
     try T1SettingsStore.save(T1Settings(tapsEnabled: false), to: defaults)
 
-    #expect(changeCount == 1)
+    #expect(recorder.changeCount == 1)
     withExtendedLifetime(observer) {}
+  }
+}
+
+private final class SettingsChangeRecorder: NSObject {
+  private(set) var changeCount = 0
+
+  @objc func recordChange() {
+    changeCount += 1
   }
 }

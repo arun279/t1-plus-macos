@@ -1,9 +1,10 @@
 import Foundation
 
-private let settingsKey = "settings"
 private let suiteName = "io.github.arun279.t1plus.settings"
 
 public enum T1SettingsStore {
+  static let settingsKey = "t1PlusSettingsData"
+
   public static func load() -> T1Settings {
     load(from: makeDefaults())
   }
@@ -13,12 +14,12 @@ public enum T1SettingsStore {
   }
 
   public static func reset() {
-    makeDefaults().removeObject(forKey: settingsKey)
+    makeDefaults().removeObject(forKey: Self.settingsKey)
   }
 
   static func load(from defaults: UserDefaults) -> T1Settings {
     guard
-      let data = defaults.data(forKey: settingsKey),
+      let data = defaults.data(forKey: Self.settingsKey),
       let settings = try? JSONDecoder().decode(T1Settings.self, from: data)
     else {
       return T1Settings()
@@ -27,41 +28,33 @@ public enum T1SettingsStore {
   }
 
   static func save(_ settings: T1Settings, to defaults: UserDefaults) throws {
-    defaults.set(try JSONEncoder().encode(settings.validated()), forKey: settingsKey)
+    defaults.set(try JSONEncoder().encode(settings.validated()), forKey: Self.settingsKey)
   }
-
 }
 
-public final class T1SettingsObserver: NSObject {
+public final class T1SettingsObserver {
+  public static let changedNotification = Notification.Name(
+    "io.github.arun279.t1plus.settings.changed"
+  )
+
   private let defaults: UserDefaults
-  private let onChange: () -> Void
+  private var observation: NSKeyValueObservation?
 
-  public convenience init(onChange: @escaping () -> Void) {
-    self.init(defaults: makeDefaults(), onChange: onChange)
+  public convenience init() {
+    self.init(defaults: makeDefaults())
   }
 
-  init(defaults: UserDefaults, onChange: @escaping () -> Void) {
+  init(defaults: UserDefaults) {
     self.defaults = defaults
-    self.onChange = onChange
-    super.init()
-    defaults.addObserver(self, forKeyPath: settingsKey, options: [], context: nil)
-  }
-
-  deinit {
-    defaults.removeObserver(self, forKeyPath: settingsKey)
-  }
-
-  public override func observeValue(
-    forKeyPath keyPath: String?,
-    of object: Any?,
-    change: [NSKeyValueChangeKey: Any]?,
-    context: UnsafeMutableRawPointer?
-  ) {
-    guard keyPath == settingsKey else {
-      super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-      return
+    observation = defaults.observe(\.t1PlusSettingsData, options: []) { _, _ in
+      NotificationCenter.default.post(name: Self.changedNotification, object: nil)
     }
-    onChange()
+  }
+}
+
+extension UserDefaults {
+  @objc fileprivate dynamic var t1PlusSettingsData: Data? {
+    data(forKey: T1SettingsStore.settingsKey)
   }
 }
 
