@@ -1,11 +1,15 @@
 import AppKit
+import T1Gestures
 
 final class WorkspaceLifecycleMonitor: NSObject {
-  private let onSuspend: (String) -> Void
-  private let onResume: (String) -> Void
+  private let onSuspend: (T1InputSuspensionReason, String) -> Void
+  private let onResume: (T1InputSuspensionReason, String) -> Void
   private var started = false
 
-  init(onSuspend: @escaping (String) -> Void, onResume: @escaping (String) -> Void) {
+  init(
+    onSuspend: @escaping (T1InputSuspensionReason, String) -> Void,
+    onResume: @escaping (T1InputSuspensionReason, String) -> Void
+  ) {
     self.onSuspend = onSuspend
     self.onResume = onResume
     super.init()
@@ -48,6 +52,9 @@ final class WorkspaceLifecycleMonitor: NSObject {
       name: NSWorkspace.sessionDidBecomeActiveNotification,
       object: nil
     )
+    if Self.currentSessionIsInactive {
+      onSuspend(.session, "session inactive at startup")
+    }
     started = true
   }
 
@@ -59,26 +66,31 @@ final class WorkspaceLifecycleMonitor: NSObject {
 
   @objc
   private func systemWillSleep(_: Notification) {
-    onSuspend("system sleep")
+    onSuspend(.system, "system sleep")
   }
 
   @objc
   private func systemWillPowerOff(_: Notification) {
-    onSuspend("system power off")
+    onSuspend(.system, "system power off")
   }
 
   @objc
   private func sessionDidResign(_: Notification) {
-    onSuspend("session inactive")
+    onSuspend(.session, "session inactive")
   }
 
   @objc
   private func systemDidWake(_: Notification) {
-    onResume("system wake")
+    onResume(.system, "system wake")
   }
 
   @objc
   private func sessionDidBecomeActive(_: Notification) {
-    onResume("session active")
+    onResume(.session, "session active")
+  }
+
+  private static var currentSessionIsInactive: Bool {
+    guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else { return false }
+    return session[kCGSessionOnConsoleKey as String] as? Bool == false
   }
 }

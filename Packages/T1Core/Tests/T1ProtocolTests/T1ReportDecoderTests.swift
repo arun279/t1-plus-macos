@@ -53,6 +53,38 @@ final class T1ReportDecoderTests: XCTestCase {
     }
   }
 
+  func testRejectsActiveContactOutsideDescriptorSurface() {
+    let payload =
+      packContact(isConfident: true, isTouching: true, identifier: 1, x: 2558, y: 1154)
+      + Array(repeating: 0, count: 15)
+
+    XCTAssertThrowsError(try T1ReportDecoder.decode(reportID: 5, bytes: payload)) {
+      XCTAssertEqual(
+        $0 as? T1ReportDecodeError,
+        .invalidActiveContact(slot: 0, x: 2558, y: 1154)
+      )
+    }
+  }
+
+  func testAllowsInactiveCoordinatesOutsideDescriptorSurface() throws {
+    let payload =
+      packContact(isConfident: false, isTouching: false, identifier: 1, x: 4095, y: 4095)
+      + Array(repeating: 0, count: 15)
+
+    let frame = try T1ReportDecoder.decode(reportID: 5, bytes: payload)
+
+    XCTAssertEqual(frame.activeContactCount, 0)
+  }
+
+  func testRejectsReportedContactCountAboveCapacity() {
+    var payload = Array(repeating: UInt8(0), count: 19)
+    payload[18] = 5
+
+    XCTAssertThrowsError(try T1ReportDecoder.decode(reportID: 5, bytes: payload)) {
+      XCTAssertEqual($0 as? T1ReportDecodeError, .invalidReportedContactCount(5))
+    }
+  }
+
   private func packContact(
     isConfident: Bool,
     isTouching: Bool,
