@@ -1,4 +1,3 @@
-import Foundation
 import IOKit.hid
 import OSLog
 import T1Protocol
