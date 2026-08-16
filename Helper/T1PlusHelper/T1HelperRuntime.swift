@@ -121,7 +121,8 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
     CFRunLoopStop(CFRunLoopGetMain())
   }
 
-  @objc private func settingsDidChange(_: Notification) {
+  @objc
+  private func settingsDidChange(_: Notification) {
     reloadSettings()
   }
 

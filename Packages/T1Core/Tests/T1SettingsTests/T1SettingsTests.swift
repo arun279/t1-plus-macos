@@ -89,7 +89,8 @@ struct T1SettingsTests {
 private final class SettingsChangeRecorder: NSObject {
   private(set) var changeCount = 0
 
-  @objc func recordChange() {
+  @objc
+  func recordChange() {
     changeCount += 1
   }
 }
