@@ -27,3 +27,15 @@ release artifacts. No telemetry or network service is part of the baseline desig
 
 Diagnostic capture must be explicit, visibly active, bounded, locally stored, and sanitized before
 sharing.
+
+## Permission inventory
+
+| Consent | Why it is required | Product use |
+| --- | --- | --- |
+| Input Monitoring | macOS protects `IOHIDManager`/`IOHIDDevice` report access | Open only VID/PID `04e8:7021` with primary usage Digitizers / Touch Pad in shared mode |
+| Accessibility event posting | macOS protects synthetic `CGEvent` posting | Emit pointer, balanced buttons, scrolling, and configured gesture shortcuts |
+| Background Item approval | macOS lets the user control registered login items | Run the bundled per-user helper while support is enabled and the settings window is closed |
+
+The product does not request Automation access to System Events, Screen Recording, Full Disk Access,
+Bluetooth privacy, administrator access, or root authorization. Development probes must be recorded
+separately and never presented as product requirements.

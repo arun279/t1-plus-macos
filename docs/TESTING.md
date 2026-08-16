@@ -9,7 +9,7 @@
 | `scripts/test.sh` | deterministic core unit and replay tests |
 | `scripts/build.sh` | unsigned native app and embedded-helper build |
 | `scripts/deadcode.sh` | type-aware SwiftLint analyzer rules after a clean Xcode build |
-| `scripts/test-app-package.sh` | bundle identity and helper-embedding smoke test |
+| `scripts/test-app-package.sh` | bundle identity, helper embedding, permission/lifecycle API linkage, architecture, and prohibited-HID-write smoke test |
 | `scripts/check.sh` | complete pre-push gate |
 
 `scripts/bootstrap.sh` verifies tools and enables the tracked hooks. It never installs tools. The
