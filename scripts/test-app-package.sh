@@ -19,16 +19,13 @@ app_executable="$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS"
 
 [[ $(plutil -extract CFBundleIdentifier raw "$info_plist") == io.github.arun279.t1plus ]]
 [[ $(plutil -extract CFBundleShortVersionString raw "$info_plist") == "$(< VERSION)" ]]
-[[ $(plutil -extract NSInputMonitoringUsageDescription raw "$info_plist") == \
-  'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
+[[ $(plutil -extract NSInputMonitoringUsageDescription raw "$info_plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ -x $app_executable ]]
 [[ -d $helper_path ]]
 [[ $(plutil -extract CFBundleIdentifier raw "$helper_path/Contents/Info.plist") == io.github.arun279.t1plus.helper ]]
 [[ $(plutil -extract LSBackgroundOnly raw "$helper_path/Contents/Info.plist") == true ]]
-[[ $(plutil -extract LSApplicationCategoryType raw "$helper_path/Contents/Info.plist") == \
-  public.app-category.utilities ]]
-[[ $(plutil -extract NSInputMonitoringUsageDescription raw "$helper_path/Contents/Info.plist") == \
-  'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
+[[ $(plutil -extract LSApplicationCategoryType raw "$helper_path/Contents/Info.plist") == public.app-category.utilities ]]
+[[ $(plutil -extract NSInputMonitoringUsageDescription raw "$helper_path/Contents/Info.plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ -x $helper_executable ]]
 
 app_architectures=$(lipo -archs "$app_executable")
