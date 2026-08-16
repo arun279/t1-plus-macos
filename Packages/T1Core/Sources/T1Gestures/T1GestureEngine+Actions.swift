@@ -15,8 +15,8 @@ extension T1GestureEngine {
         cursorY: logicalCursorY
       )
     }
-    emitButton(button, phase: .down, clickCount: clickCount, sink: &sink)
-    emitButton(button, phase: .up, clickCount: clickCount, sink: &sink)
+    emitButton(button, phase: .pressed, clickCount: clickCount, sink: &sink)
+    emitButton(button, phase: .released, clickCount: clickCount, sink: &sink)
   }
 
   func isNearLastTap(at timestampNanoseconds: UInt64) -> Bool {

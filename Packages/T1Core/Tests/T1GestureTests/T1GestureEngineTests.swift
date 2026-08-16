@@ -40,8 +40,8 @@ final class T1GestureEngineTests: XCTestCase {
     performTap(engine: &engine, sink: &sink, start: start, x: 500, y: 400)
     performTap(engine: &engine, sink: &sink, start: start + 200_000_000, x: 900, y: 700)
 
-    XCTAssertTrue(sink.actions.contains(.button(.left, phase: .down, clickCount: 1)))
-    XCTAssertTrue(sink.actions.contains(.button(.left, phase: .down, clickCount: 2)))
+    XCTAssertTrue(sink.actions.contains(.button(.left, phase: .pressed, clickCount: 1)))
+    XCTAssertTrue(sink.actions.contains(.button(.left, phase: .pressed, clickCount: 2)))
   }
 
   func testTapDragEmitsHeldClickAndDragMotion() {
@@ -54,7 +54,7 @@ final class T1GestureEngineTests: XCTestCase {
     engine.process(gestureFrame([(0, 525, 401)]), at: start + 240_000_000, into: &sink)
     engine.process(gestureFrame([]), at: start + 280_000_000, into: &sink)
 
-    XCTAssertTrue(sink.actions.contains(.button(.left, phase: .down, clickCount: 2)))
+    XCTAssertTrue(sink.actions.contains(.button(.left, phase: .pressed, clickCount: 2)))
     XCTAssertTrue(
       sink.actions.contains { action in
         if case .pointer(_, _, .leftDrag) = action { return true }
@@ -62,7 +62,7 @@ final class T1GestureEngineTests: XCTestCase {
       })
     XCTAssertEqual(
       Array(sink.actions.suffix(1)),
-      [.button(.left, phase: .up, clickCount: 2)]
+      [.button(.left, phase: .released, clickCount: 2)]
     )
   }
 
@@ -119,8 +119,8 @@ final class T1GestureEngineTests: XCTestCase {
     XCTAssertEqual(
       sink.actions,
       [
-        .button(.right, phase: .down, clickCount: 1),
-        .button(.right, phase: .up, clickCount: 1),
+        .button(.right, phase: .pressed, clickCount: 1),
+        .button(.right, phase: .released, clickCount: 1),
       ]
     )
   }

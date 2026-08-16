@@ -99,24 +99,28 @@ public struct T1GestureEngine: Sendable {
     interaction.samples += 1
 
     if interaction.mode == .pointer {
-      if interaction.tapDragCandidate, !tapDragDown,
-        fromStart >= Threshold.tapDragStartDistance,
-        elapsedSeconds(from: interaction.startedAt, to: timestampNanoseconds)
+      let shouldBeginTapDrag =
+        interaction.tapDragCandidate
+        && !tapDragDown
+        && fromStart >= Threshold.tapDragStartDistance
+        && elapsedSeconds(from: interaction.startedAt, to: timestampNanoseconds)
           < Threshold.tapDragCommitSeconds
-      {
-        emitButton(.left, phase: .down, clickCount: 2, sink: &sink)
+      if shouldBeginTapDrag {
+        emitButton(.left, phase: .pressed, clickCount: 2, sink: &sink)
         tapDragDown = true
         lastTap = nil
       }
       emitPointer(deltaX: deltaX, deltaY: deltaY, sink: &sink)
     } else if interaction.mode == .twoPending {
-      if abs(radiusChange) >= Threshold.pinchStartDistance,
-        abs(radiusChange) > fromStart * 0.80
-      {
+      let isPinch =
+        abs(radiusChange) >= Threshold.pinchStartDistance
+        && abs(radiusChange) > fromStart * 0.80
+      let isScroll =
+        fromStart >= Threshold.scrollStartDistance * 1.7
+        && fromStart > abs(radiusChange) * 1.15
+      if isPinch {
         interaction.mode = .twoPinch
-      } else if fromStart >= Threshold.scrollStartDistance * 1.7,
-        fromStart > abs(radiusChange) * 1.15
-      {
+      } else if isScroll {
         interaction.mode = .twoScroll
         let totalX = geometry.centroidX - interaction.startX
         let totalY = geometry.centroidY - interaction.startY
@@ -131,6 +135,10 @@ public struct T1GestureEngine: Sendable {
     let twoFingerCommitted =
       elapsedSeconds(from: interaction.startedAt, to: timestampNanoseconds)
       >= Threshold.twoFingerCommitSeconds
+    let shouldEmitPinch =
+      interaction.mode == .twoPinch
+      && configuration.gesturesEnabled
+      && twoFingerCommitted
     if interaction.mode == .twoScroll, twoFingerCommitted {
       var scrollX = interaction.pendingScrollX
       var scrollY = interaction.pendingScrollY
@@ -142,10 +150,7 @@ public struct T1GestureEngine: Sendable {
         scrollY = 0
       }
       emitScroll(deltaX: scrollX, deltaY: scrollY, sink: &sink)
-    } else if interaction.mode == .twoPinch,
-      configuration.gesturesEnabled,
-      twoFingerCommitted
-    {
+    } else if shouldEmitPinch {
       let stepPosition = radiusChange / 68.0
       while stepPosition >= Double(interaction.pinchStepsEmitted) + 0.80 {
         sink.record(.shortcut(.zoomIn))
@@ -167,7 +172,7 @@ public struct T1GestureEngine: Sendable {
   ) {
     finishInteraction(at: timestampNanoseconds, lifted: true, sink: &sink)
     if physicalButtonDown {
-      emitButton(physicalButton, phase: .up, clickCount: 1, sink: &sink)
+      emitButton(physicalButton, phase: .released, clickCount: 1, sink: &sink)
     }
     physicalButtonDown = false
     tapDragDown = false
@@ -185,7 +190,7 @@ private extension T1GestureEngine {
 
     if frame.isPrimaryButtonPressed {
       if tapDragDown {
-        emitButton(.left, phase: .up, clickCount: 2, sink: &sink)
+        emitButton(.left, phase: .released, clickCount: 2, sink: &sink)
         tapDragDown = false
       }
       var pressX = Threshold.surfaceMidpointX - 1
@@ -202,9 +207,9 @@ private extension T1GestureEngine {
       physicalButtonDown = true
       suppressTapUntilLift = true
       interaction.sawPhysicalButton = true
-      emitButton(physicalButton, phase: .down, clickCount: 1, sink: &sink)
+      emitButton(physicalButton, phase: .pressed, clickCount: 1, sink: &sink)
     } else {
-      emitButton(physicalButton, phase: .up, clickCount: 1, sink: &sink)
+      emitButton(physicalButton, phase: .released, clickCount: 1, sink: &sink)
       physicalButtonDown = false
     }
   }
@@ -261,7 +266,7 @@ private extension T1GestureEngine {
   }
 
   // Completion predicates are ordered because only the first matching gesture may emit an action.
-  // swiftlint:disable:next cyclomatic_complexity function_body_length
+  // swiftlint:disable:next function_body_length
   private mutating func finishInteraction<Sink: T1GestureActionSink>(
     at timestampNanoseconds: UInt64,
     lifted: Bool,
@@ -271,7 +276,7 @@ private extension T1GestureEngine {
 
     let duration = elapsedSeconds(from: interaction.startedAt, to: timestampNanoseconds)
     if tapDragDown, interaction.mode == .pointer {
-      emitButton(.left, phase: .up, clickCount: 2, sink: &sink)
+      emitButton(.left, phase: .released, clickCount: 2, sink: &sink)
       tapDragDown = false
       interaction = Interaction()
       return
@@ -282,51 +287,56 @@ private extension T1GestureEngine {
       sink.record(.scroll(deltaX: 0, deltaY: 0, phase: .ended))
     }
 
-    if interaction.mode == .pointer,
-      configuration.tapsEnabled,
-      cleanLift,
-      interaction.samples >= 3,
-      duration >= 0.035,
-      duration <= Threshold.tapMaxSeconds,
-      interaction.maxCentroidDistance <= Threshold.tapMaxDistance
-    {
+    let isPointerTap =
+      interaction.mode == .pointer
+      && configuration.tapsEnabled
+      && cleanLift
+      && interaction.samples >= 3
+      && duration >= 0.035
+      && duration <= Threshold.tapMaxSeconds
+      && interaction.maxCentroidDistance <= Threshold.tapMaxDistance
+    let isSecondaryTap =
+      interaction.mode == .twoPending
+      && configuration.tapsEnabled
+      && cleanLift
+      && interaction.samples >= 3
+      && duration >= 0.045
+      && duration <= Threshold.twoFingerTapMaxSeconds
+      && interaction.maxCentroidDistance <= Threshold.twoFingerTapMaxDistance
+      && interaction.maxRadiusChange <= Threshold.twoFingerTapMaxDistance
+    let isMultiFingerTap =
+      interaction.mode == .multi
+      && configuration.gesturesEnabled
+      && cleanLift
+      && interaction.samples >= 3
+      && duration <= 0.36
+      && interaction.maxCentroidDistance <= 42
+    let isMultiFingerSwipe =
+      interaction.mode == .multi
+      && lifted
+      && configuration.gesturesEnabled
+      && interaction.samples >= 8
+      && duration >= 0.10
+
+    if isPointerTap {
       emitTap(
         .left,
         at: timestampNanoseconds,
         sink: &sink
       )
-    } else if interaction.mode == .twoPending,
-      configuration.tapsEnabled,
-      cleanLift,
-      interaction.samples >= 3,
-      duration >= 0.045,
-      duration <= Threshold.twoFingerTapMaxSeconds,
-      interaction.maxCentroidDistance <= Threshold.twoFingerTapMaxDistance,
-      interaction.maxRadiusChange <= Threshold.twoFingerTapMaxDistance
-    {
+    } else if isSecondaryTap {
       emitTap(
         .right,
         at: timestampNanoseconds,
         sink: &sink
       )
-    } else if interaction.mode == .multi,
-      configuration.gesturesEnabled,
-      cleanLift,
-      interaction.samples >= 3,
-      duration <= 0.36,
-      interaction.maxCentroidDistance <= 42
-    {
+    } else if isMultiFingerTap {
       if interaction.fingers == 3 {
         sink.record(.shortcut(.spotlight))
       } else if interaction.fingers == 4 {
         sink.record(.shortcut(.notificationCenter))
       }
-    } else if interaction.mode == .multi,
-      lifted,
-      configuration.gesturesEnabled,
-      interaction.samples >= 8,
-      duration >= 0.10
-    {
+    } else if isMultiFingerSwipe {
       emitSwipe(sink: &sink)
     }
     interaction = Interaction()

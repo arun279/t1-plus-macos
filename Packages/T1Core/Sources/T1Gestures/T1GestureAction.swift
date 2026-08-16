@@ -10,8 +10,8 @@ public enum T1Button: Equatable, Sendable {
 }
 
 public enum T1ButtonPhase: Equatable, Sendable {
-  case down
-  case up
+  case pressed
+  case released
 }
 
 public enum T1ScrollPhase: Equatable, Sendable {

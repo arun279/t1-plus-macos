@@ -115,8 +115,8 @@ final class T1MultiFingerGestureEngineTests: XCTestCase {
     XCTAssertEqual(
       sink.actions,
       [
-        .button(.right, phase: .down, clickCount: 1),
-        .button(.right, phase: .up, clickCount: 1),
+        .button(.right, phase: .pressed, clickCount: 1),
+        .button(.right, phase: .released, clickCount: 1),
       ]
     )
   }
