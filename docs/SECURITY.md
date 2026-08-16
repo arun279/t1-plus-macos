@@ -39,3 +39,7 @@ sharing.
 The product does not request Automation access to System Events, Screen Recording, Full Disk Access,
 Bluetooth privacy, administrator access, or root authorization. Development probes must be recorded
 separately and never presented as product requirements.
+
+An external change to the per-user settings key is untrusted. It cannot invoke a helper command. The
+helper applies only a newly visible, versioned, bounded settings value and ignores changes that do
+not alter effective configuration.

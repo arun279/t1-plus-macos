@@ -10,13 +10,6 @@ protocol T1HIDInputDelegate: AnyObject {
 }
 
 final class T1HIDInput {
-  private enum Device {
-    static let vendorID = 0x04E8
-    static let productID = 0x7021
-    static let usagePage = 0x0D
-    static let usage = 0x05
-  }
-
   private static let reportBufferCapacity = 64
 
   private let logger = Logger(subsystem: "io.github.arun279.t1plus", category: "hid")
@@ -43,10 +36,10 @@ final class T1HIDInput {
     guard !started else { return true }
 
     let matching: [String: Any] = [
-      kIOHIDVendorIDKey as String: Device.vendorID,
-      kIOHIDProductIDKey as String: Device.productID,
-      kIOHIDPrimaryUsagePageKey as String: Device.usagePage,
-      kIOHIDPrimaryUsageKey as String: Device.usage,
+      kIOHIDVendorIDKey as String: T1DeviceIdentity.vendorID,
+      kIOHIDProductIDKey as String: T1DeviceIdentity.productID,
+      kIOHIDPrimaryUsagePageKey as String: T1DeviceIdentity.usagePage,
+      kIOHIDPrimaryUsageKey as String: T1DeviceIdentity.usage,
     ]
     let context = Unmanaged.passUnretained(self).toOpaque()
     IOHIDManagerSetDeviceMatching(manager, matching as CFDictionary)
@@ -140,10 +133,10 @@ final class T1HIDInput {
   }
 
   private func matchesExpectedIdentity(_ device: IOHIDDevice) -> Bool {
-    integerProperty(device, key: kIOHIDVendorIDKey) == Device.vendorID
-      && integerProperty(device, key: kIOHIDProductIDKey) == Device.productID
-      && integerProperty(device, key: kIOHIDPrimaryUsagePageKey) == Device.usagePage
-      && integerProperty(device, key: kIOHIDPrimaryUsageKey) == Device.usage
+    integerProperty(device, key: kIOHIDVendorIDKey) == T1DeviceIdentity.vendorID
+      && integerProperty(device, key: kIOHIDProductIDKey) == T1DeviceIdentity.productID
+      && integerProperty(device, key: kIOHIDPrimaryUsagePageKey) == T1DeviceIdentity.usagePage
+      && integerProperty(device, key: kIOHIDPrimaryUsageKey) == T1DeviceIdentity.usage
   }
 
   private func integerProperty(_ device: IOHIDDevice, key: String) -> Int? {

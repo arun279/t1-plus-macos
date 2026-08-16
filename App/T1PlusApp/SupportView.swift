@@ -1,4 +1,5 @@
 import SwiftUI
+import T1Settings
 
 struct SupportView: View {
   @ObservedObject var model: T1SupportModel
@@ -6,19 +7,46 @@ struct SupportView: View {
   private var scenePhase
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 20) {
-      header
-      permissions
-      support
-      privacy
+    ScrollView {
+      VStack(alignment: .leading, spacing: 20) {
+        header
+        status
+        permissions
+        support
+        error
+        touchpadSettings
+        privacy
+      }
+      .padding(24)
     }
-    .padding(24)
-    .frame(width: 560, alignment: .topLeading)
-    .fixedSize(horizontal: false, vertical: true)
+    .frame(width: 560, height: 720)
     .onChange(of: scenePhase) { phase in
       if phase == .active {
         model.refresh()
       }
+    }
+  }
+
+  private var status: some View {
+    GroupBox("Status") {
+      HStack(spacing: 20) {
+        StatusValue(
+          title: model.deviceConnected ? "T1 Plus connected" : "T1 Plus not connected",
+          systemImage: model.deviceConnected ? "checkmark.circle.fill" : "circle.dashed",
+          active: model.deviceConnected
+        )
+        Divider()
+        StatusValue(
+          title: "Support \(model.supportStatus.lowercased())",
+          systemImage: model.supportEnabled ? "checkmark.circle.fill" : "circle",
+          active: model.supportEnabled
+        )
+        Spacer()
+        Button("Refresh") {
+          model.refresh()
+        }
+      }
+      .padding(.top, 4)
     }
   }
 
@@ -96,19 +124,95 @@ struct SupportView: View {
           }
         }
 
-        if let errorMessage = model.errorMessage {
-          Text(errorMessage)
-            .font(.callout)
-            .foregroundStyle(.red)
-            .textSelection(.enabled)
-        }
-
         Text(
           "The T1 Plus can be paired before or after support is enabled. "
             + "The helper waits for it and reconnects automatically."
         )
         .font(.callout)
         .foregroundStyle(.secondary)
+      }
+      .padding(.top, 4)
+    }
+  }
+
+  @ViewBuilder private var error: some View {
+    if let errorMessage = model.errorMessage {
+      Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+        .font(.callout)
+        .foregroundStyle(.red)
+        .textSelection(.enabled)
+    }
+  }
+
+  private var touchpadSettings: some View {
+    GroupBox("Touchpad") {
+      VStack(alignment: .leading, spacing: 14) {
+        SettingsSlider(
+          title: "Pointer speed",
+          value: Binding(
+            get: { model.settings.pointerGain },
+            set: { value in
+              model.updateSettings(persist: false) { $0.pointerGain = value }
+            }
+          ),
+          range: T1Settings.pointerGainRange,
+          onEditingChanged: { editing in
+            if !editing {
+              model.saveSettings()
+            }
+          }
+        )
+        Divider()
+        Toggle(
+          "Tap to click",
+          isOn: Binding(
+            get: { model.settings.tapsEnabled },
+            set: { enabled in
+              model.updateSettings { $0.tapsEnabled = enabled }
+            }
+          )
+        )
+        Divider()
+        SettingsSlider(
+          title: "Scroll speed",
+          value: Binding(
+            get: { model.settings.scrollGain },
+            set: { value in
+              model.updateSettings(persist: false) { $0.scrollGain = value }
+            }
+          ),
+          range: T1Settings.scrollGainRange,
+          onEditingChanged: { editing in
+            if !editing {
+              model.saveSettings()
+            }
+          }
+        )
+        Divider()
+        Toggle(
+          "Reverse scroll direction",
+          isOn: Binding(
+            get: { model.settings.invertScroll },
+            set: { enabled in
+              model.updateSettings { $0.invertScroll = enabled }
+            }
+          )
+        )
+        Toggle(
+          "Pinch and three- or four-finger gestures",
+          isOn: Binding(
+            get: { model.settings.gesturesEnabled },
+            set: { enabled in
+              model.updateSettings { $0.gesturesEnabled = enabled }
+            }
+          )
+        )
+        HStack {
+          Spacer()
+          Button("Restore Defaults") {
+            model.resetSettings()
+          }
+        }
       }
       .padding(.top, 4)
     }
@@ -121,6 +225,35 @@ struct SupportView: View {
     )
     .font(.callout)
     .foregroundStyle(.secondary)
+  }
+}
+
+private struct StatusValue: View {
+  let title: String
+  let systemImage: String
+  let active: Bool
+
+  var body: some View {
+    Label(title, systemImage: systemImage)
+      .foregroundStyle(active ? .green : .secondary)
+  }
+}
+
+private struct SettingsSlider: View {
+  let title: String
+  @Binding var value: Double
+  let range: ClosedRange<Double>
+  let onEditingChanged: (Bool) -> Void
+
+  var body: some View {
+    HStack(spacing: 12) {
+      Text(title)
+        .frame(width: 100, alignment: .leading)
+      Slider(value: $value, in: range, onEditingChanged: onEditingChanged)
+      Text(value, format: .number.precision(.fractionLength(2)))
+        .monospacedDigit()
+        .frame(width: 36, alignment: .trailing)
+    }
   }
 }
 

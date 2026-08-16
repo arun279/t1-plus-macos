@@ -28,6 +28,20 @@ app_executable="$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS"
 [[ $(plutil -extract NSInputMonitoringUsageDescription raw "$helper_path/Contents/Info.plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ -x $helper_executable ]]
 
+for plist in "$info_plist" "$helper_path/Contents/Info.plist"; do
+  for forbidden_key in \
+    NSAppleEventsUsageDescription \
+    NSBluetoothAlwaysUsageDescription \
+    NSBluetoothPeripheralUsageDescription \
+    NSScreenCaptureUsageDescription \
+    NSSystemAdministrationUsageDescription; do
+    if plutil -extract "$forbidden_key" raw "$plist" > /dev/null 2>&1; then
+      printf 'error: app bundle declares forbidden permission key: %s\n' "$forbidden_key" >&2
+      exit 1
+    fi
+  done
+done
+
 app_architectures=$(lipo -archs "$app_executable")
 helper_architectures=$(lipo -archs "$helper_executable")
 for architectures in "$app_architectures" "$helper_architectures"; do
@@ -52,6 +66,18 @@ for required_symbol in \
   "OBJC_CLASS_\$_SMAppService"; do
   if [[ $app_symbols != *$required_symbol* ]]; then
     printf 'error: app does not link required lifecycle API: %s\n' "$required_symbol" >&2
+    exit 1
+  fi
+done
+
+combined_symbols="$app_symbols
+$undefined_symbols"
+for forbidden_symbol in \
+  _AEDeterminePermissionToAutomateTarget \
+  _CGPreflightScreenCaptureAccess \
+  _CGRequestScreenCaptureAccess; do
+  if [[ $combined_symbols == *$forbidden_symbol* ]]; then
+    printf 'error: app bundle links forbidden permission API: %s\n' "$forbidden_symbol" >&2
     exit 1
   fi
 done

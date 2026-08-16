@@ -16,6 +16,16 @@
 optional `Brewfile` is an explicit convenience for developers who choose to modify their local
 Homebrew environment.
 
+The settings suite owns schema-version rejection, gain validation, gesture-configuration mapping,
+preference round-trip, and reset behavior. Live acceptance separately verifies that one persisted
+change produces one idempotent helper reload and that rewriting the same effective value cannot
+interrupt input.
+
+The package gate enforces the release permission budget. It requires the Input Monitoring usage
+description and the two explicit onboarding APIs, rejects Apple Events automation and screen-capture
+request APIs, and rejects usage descriptions for Automation, Bluetooth privacy, screen capture, and
+system administration.
+
 ## CI
 
 Pull requests use stable checks for formatting/linting, release building, core tests, app-package
