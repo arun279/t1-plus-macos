@@ -1,4 +1,3 @@
-import Foundation
 import T1Gestures
 
 public struct T1Settings: Codable, Equatable, Sendable {
