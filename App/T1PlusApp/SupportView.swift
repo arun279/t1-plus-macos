@@ -2,7 +2,8 @@ import SwiftUI
 
 struct SupportView: View {
   @ObservedObject var model: T1SupportModel
-  @Environment(\.scenePhase) private var scenePhase
+  @Environment(\.scenePhase)
+  private var scenePhase
 
   var body: some View {
     VStack(alignment: .leading, spacing: 20) {

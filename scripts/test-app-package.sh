@@ -52,7 +52,7 @@ for required_symbol in \
   _CGRequestPostEventAccess \
   _IOHIDCheckAccess \
   _IOHIDRequestAccess \
-  'OBJC_CLASS_$_SMAppService'; do
+  "OBJC_CLASS_\$_SMAppService"; do
   if [[ $app_symbols != *$required_symbol* ]]; then
     printf 'error: app does not link required lifecycle API: %s\n' "$required_symbol" >&2
     exit 1
