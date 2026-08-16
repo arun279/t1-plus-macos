@@ -1,5 +1,6 @@
 import Combine
 import CoreGraphics
+import Foundation
 import IOKit.hid
 import ServiceManagement
 import T1Protocol
@@ -19,6 +20,7 @@ final class T1SupportModel: ObservableObject {
   @Published private(set) var deviceConnected = false
   @Published private(set) var settings = T1SettingsStore.load()
   @Published private(set) var errorMessage: String?
+  @Published private(set) var noticeMessage: String?
 
   private let service = SMAppService.loginItem(identifier: "io.github.arun279.t1plus.helper")
 
@@ -65,18 +67,21 @@ final class T1SupportModel: ObservableObject {
 
   func requestInputMonitoring() {
     errorMessage = nil
+    noticeMessage = nil
     _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
     refresh()
   }
 
   func requestEventPosting() {
     errorMessage = nil
+    noticeMessage = nil
     _ = CGRequestPostEventAccess()
     refresh()
   }
 
   func setSupportEnabled(_ enabled: Bool) {
     errorMessage = nil
+    noticeMessage = nil
     do {
       if enabled {
         guard canEnableSupport else {
@@ -107,6 +112,7 @@ final class T1SupportModel: ObservableObject {
     _ update: (inout T1Settings) -> Void
   ) {
     errorMessage = nil
+    noticeMessage = nil
     var updated = settings
     update(&updated)
     updated = updated.validated()
@@ -118,6 +124,7 @@ final class T1SupportModel: ObservableObject {
 
   func saveSettings() {
     errorMessage = nil
+    noticeMessage = nil
     do {
       try T1SettingsStore.save(settings)
     } catch {
@@ -127,8 +134,76 @@ final class T1SupportModel: ObservableObject {
 
   func resetSettings() {
     errorMessage = nil
+    noticeMessage = "Touchpad settings restored to defaults."
     T1SettingsStore.reset()
     settings = T1Settings()
+  }
+
+  func makeDiagnosticsReport() -> String {
+    refresh()
+    let generatedAt = ISO8601DateFormatter().string(from: Date())
+    let version =
+      Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+    let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+    let connected = deviceConnected ? "connected" : "not connected"
+    let inputMonitoring = inputMonitoringGranted ? "granted" : "not granted"
+    let accessibility = eventPostingGranted ? "granted" : "not granted"
+
+    return """
+      T1 Plus Touchpad Support Diagnostics
+      Generated: \(generatedAt)
+      App version: \(version) (\(build))
+      macOS: \(ProcessInfo.processInfo.operatingSystemVersionString)
+      Architecture: \(Self.architecture)
+      Device: \(connected)
+      Support: \(supportStatus.lowercased())
+      Input Monitoring: \(inputMonitoring)
+      Accessibility: \(accessibility)
+      Backend: CoreGraphics CGEvent
+      Settings schema: \(T1Settings.currentVersion)
+      Tap to click: \(settings.tapsEnabled)
+      Multi-finger gestures: \(settings.gesturesEnabled)
+      Reverse scroll direction: \(settings.invertScroll)
+      Pointer gain: \(settings.pointerGain)
+      Scroll gain: \(settings.scrollGain)
+      Raw touch data included: no
+      User identity, paths, serial numbers, and logs included: no
+
+      """
+  }
+
+  func completeDiagnosticsExport(_ result: Result<URL, any Error>) {
+    switch result {
+    case .success:
+      errorMessage = nil
+      noticeMessage = "Diagnostics saved."
+    case let .failure(error):
+      let cocoaError = error as NSError
+      guard
+        cocoaError.domain != NSCocoaErrorDomain || cocoaError.code != NSUserCancelledError
+      else { return }
+      noticeMessage = nil
+      errorMessage = "Diagnostics could not be saved. \(error.localizedDescription)"
+    }
+  }
+
+  func removeSupport() {
+    errorMessage = nil
+    noticeMessage = nil
+    do {
+      if service.status == .enabled || service.status == .requiresApproval {
+        try service.unregister()
+      }
+      T1SettingsStore.reset()
+      settings = T1Settings()
+      refresh()
+      noticeMessage =
+        "T1 Plus support and settings were removed. macOS permissions remain until you remove "
+        + "them in System Settings. You can now move this app to Trash."
+    } catch {
+      errorMessage = "Support could not be removed. \(error.localizedDescription)"
+      refresh()
+    }
   }
 
   private static func isDeviceConnected() -> Bool {
@@ -142,5 +217,15 @@ final class T1SupportModel: ObservableObject {
     IOHIDManagerSetDeviceMatching(manager, matching as CFDictionary)
     guard let devices = IOHIDManagerCopyDevices(manager) else { return false }
     return CFSetGetCount(devices) > 0
+  }
+
+  private static var architecture: String {
+    #if arch(arm64)
+      "arm64"
+    #elseif arch(x86_64)
+      "x86_64"
+    #else
+      "unknown"
+    #endif
   }
 }

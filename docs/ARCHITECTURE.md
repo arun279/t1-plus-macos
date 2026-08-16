@@ -50,6 +50,17 @@ same exact VID, PID, and touchpad usage match as the helper. No distributed noti
 general-purpose IPC listener, status polling loop, shared raw-input stream, or helper command
 protocol is required.
 
+Diagnostics are generated on demand from a fixed field allowlist: app version/build, macOS version,
+architecture, exact-device presence, service and permission state, backend name, settings schema,
+and bounded effective settings. The report contains no raw touch data, event log, user identity,
+filesystem path, or device serial number. SwiftUI's standard document exporter lets the user choose
+the destination without another privacy grant.
+
+The removal action unregisters the login item and deletes the dedicated settings value. It never
+writes to the device and does not try to delete its own app bundle or manipulate TCC records. The UI
+instructs the user to move the remaining app to Trash; macOS remains the authority for revoking any
+privacy grants.
+
 The helper runs as the signed-in user. The baseline architecture has no root daemon, kernel
 extension, private framework, or system-process injection.
 
@@ -65,6 +76,9 @@ an interrupted contact into a gesture. They end active scroll phases and release
 button before the helper exits or waits for reconnection. Malformed reports are discarded without
 raw-input logging or unbounded log volume. While the user session is inactive, reports cannot emit
 output; if a contact was held, input remains suppressed after resume until every contact lifts.
+The lifecycle monitor registers for session transitions before reading the public CoreGraphics
+session dictionary, so a helper launched into an already inactive fast-user-switch session starts
+suspended without polling.
 
 ## Core boundary
 

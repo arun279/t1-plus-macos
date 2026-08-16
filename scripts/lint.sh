@@ -17,7 +17,11 @@ if [[ $mode == all || $mode == swift ]]; then
     --parallel \
     --recursive \
     --strict \
-    App Helper Packages
+    App \
+    Helper \
+    Packages/T1Core/Package.swift \
+    Packages/T1Core/Sources \
+    Packages/T1Core/Tests
   swiftlint lint --strict --config .swiftlint.yml
 fi
 

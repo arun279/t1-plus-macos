@@ -5,6 +5,7 @@
 ## Verification
 
 - [ ] `scripts/check.sh`
+- [ ] `scripts/test-ui.sh` passed or the change does not affect the app UI/lifecycle
 - [ ] Documentation reflects the resulting behavior
 - [ ] No new dependency, privilege, private API, firmware write, or persistent device write
 

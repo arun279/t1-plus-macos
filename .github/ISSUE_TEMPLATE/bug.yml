@@ -36,3 +36,10 @@ body:
       label: Actual behavior
     validations:
       required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: App diagnostics
+      description: >-
+        Optional. In the app, choose Save Diagnostics and paste the generated report. It excludes
+        touch data and personal paths.

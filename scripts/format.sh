@@ -10,6 +10,10 @@ swift format format \
   --in-place \
   --parallel \
   --recursive \
-  App Helper Packages
+  App \
+  Helper \
+  Packages/T1Core/Package.swift \
+  Packages/T1Core/Sources \
+  Packages/T1Core/Tests
 
 shfmt -w -i 2 -ci -sr scripts .githooks
