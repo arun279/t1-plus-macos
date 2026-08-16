@@ -22,6 +22,23 @@ The helper is bundled under `Contents/Library/LoginItems` and registered with `S
 when support is enabled. Closing the settings window does not stop enabled input support. Disabling
 support unregisters and terminates the helper, leaving no resident process.
 
+Installation and Bluetooth pairing are independent. If the device is already connected, the helper
+matches it when enabled. If the app is enabled first, the helper remains event-driven until the
+device connects. The direct-distribution DMG instructs users to copy the app into Applications before
+launching it so the login-item path remains available after the disk image is ejected.
+
+The supported CoreGraphics backend requires two macOS privacy grants: Input Monitoring for shared
+HID report access and the event-posting privilege displayed by macOS under Accessibility. The app
+requests each grant only after an explicit user action and explains its use first. `SMAppService`
+may separately require approval for the background item. Automation access to System Events, Screen
+Recording, Full Disk Access, Bluetooth privacy, administrator access, and root authorization are not
+part of the product permission model.
+
+The main app and helper both carry the same specific Input Monitoring usage description. Production
+builds use a stable signing identity, and `SMAppService` establishes the main app as the helper's
+responsible code so macOS can present and retain consent under the product identity. Development
+builds launched through Terminal, SSH, or a debugger are not valid permission-onboarding evidence.
+
 The helper runs as the signed-in user. The baseline architecture has no root daemon, kernel
 extension, private framework, or system-process injection.
 

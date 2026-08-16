@@ -18,6 +18,8 @@
 		100000000000000000000009 /* T1HIDInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000008 /* T1HIDInput.swift */; };
 		10000000000000000000000A /* CGEventOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* CGEventOutput.swift */; };
 		10000000000000000000000B /* WorkspaceLifecycleMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* WorkspaceLifecycleMonitor.swift */; };
+		10000000000000000000000C /* T1SupportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* T1SupportModel.swift */; };
+		10000000000000000000000D /* SupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* SupportView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +57,8 @@
 		200000000000000000000008 /* T1HIDInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HIDInput.swift; sourceTree = "<group>"; };
 		200000000000000000000009 /* CGEventOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGEventOutput.swift; sourceTree = "<group>"; };
 		20000000000000000000000A /* WorkspaceLifecycleMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceLifecycleMonitor.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* T1SupportModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1SupportModel.swift; sourceTree = "<group>"; };
+		20000000000000000000000C /* SupportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +96,8 @@
 			isa = PBXGroup;
 			children = (
 				200000000000000000000001 /* T1PlusApp.swift */,
+				20000000000000000000000B /* T1SupportModel.swift */,
+				20000000000000000000000C /* SupportView.swift */,
 				200000000000000000000002 /* Info.plist */,
 			);
 			path = App/T1PlusApp;
@@ -230,6 +236,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000001 /* T1PlusApp.swift in Sources */,
+				10000000000000000000000C /* T1SupportModel.swift in Sources */,
+				10000000000000000000000D /* SupportView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

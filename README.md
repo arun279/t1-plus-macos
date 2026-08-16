@@ -44,10 +44,12 @@ checks and the hardware test boundary.
 
 The raw report decoder and semantic gesture engine are implemented in Swift and covered by
 deterministic tests. The helper now connects through shared, read-only IOHID input and translates
-semantic actions through CoreGraphics, with reconnect and output-state cleanup. The language
-decision and release-build evidence are recorded in
-[ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Permission onboarding,
-`SMAppService` registration, settings, diagnostics, and full hardware acceptance remain under
+semantic actions through CoreGraphics, with reconnect and output-state cleanup. The native app now
+shows the two required macOS permissions and controls the bundled helper through `SMAppService`.
+The T1 Plus can be paired before or after support is enabled; the helper waits for it and reconnects
+automatically. The language decision and release-build evidence are recorded in
+[ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Signed-app permission and
+service lifecycle acceptance, settings, diagnostics, and full hardware acceptance remain under
 development. No public release is ready yet.
 
 ## Independence and trademarks
