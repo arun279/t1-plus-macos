@@ -35,7 +35,7 @@ for plist in "$info_plist" "$helper_path/Contents/Info.plist"; do
     NSBluetoothPeripheralUsageDescription \
     NSScreenCaptureUsageDescription \
     NSSystemAdministrationUsageDescription; do
-    if plutil -extract "$forbidden_key" raw "$plist" >/dev/null 2>&1; then
+    if plutil -extract "$forbidden_key" raw "$plist" > /dev/null 2>&1; then
       printf 'error: app bundle declares forbidden permission key: %s\n' "$forbidden_key" >&2
       exit 1
     fi
