@@ -39,6 +39,17 @@ builds use a stable signing identity, and `SMAppService` establishes the main ap
 responsible code so macOS can present and retain consent under the product identity. Development
 builds launched through Terminal, SSH, or a debugger are not valid permission-onboarding evidence.
 
+Settings use a versioned, bounded `Codable` value in a dedicated per-user preferences suite. The
+helper uses key-value observation on that one settings key, Apple's documented mechanism for changes
+made by another process. It re-reads the complete value only after the defaults system reports it
+visible, validates it, and ignores it when the effective configuration did not change. Pointer and
+scroll sliders persist only when editing ends, avoiding preference traffic while a control is dragged.
+
+The app reads registration state from `SMAppService` and checks current device presence through the
+same exact VID, PID, and touchpad usage match as the helper. No distributed notification,
+general-purpose IPC listener, status polling loop, shared raw-input stream, or helper command
+protocol is required.
+
 The helper runs as the signed-in user. The baseline architecture has no root daemon, kernel
 extension, private framework, or system-process injection.
 

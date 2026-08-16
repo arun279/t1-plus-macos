@@ -47,10 +47,12 @@ deterministic tests. The helper now connects through shared, read-only IOHID inp
 semantic actions through CoreGraphics, with reconnect and output-state cleanup. The native app now
 shows the two required macOS permissions and controls the bundled helper through `SMAppService`.
 The T1 Plus can be paired before or after support is enabled; the helper waits for it and reconnects
-automatically. The language decision and release-build evidence are recorded in
+automatically. The app also reports exact-device presence and configures pointer speed, tapping,
+scrolling, and gestures through versioned, validated per-user settings. The language decision and
+release-build evidence are recorded in
 [ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Signed-app permission and
-service lifecycle acceptance, settings, diagnostics, and full hardware acceptance remain under
-development. No public release is ready yet.
+service lifecycle acceptance, diagnostics, and full hardware acceptance remain under development.
+No public release is ready yet.
 
 ## Independence and trademarks
 

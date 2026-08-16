@@ -20,6 +20,8 @@
 		10000000000000000000000B /* WorkspaceLifecycleMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* WorkspaceLifecycleMonitor.swift */; };
 		10000000000000000000000C /* T1SupportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* T1SupportModel.swift */; };
 		10000000000000000000000D /* SupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* SupportView.swift */; };
+		10000000000000000000000E /* T1Settings in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000006 /* T1Settings */; };
+		10000000000000000000000F /* T1Settings in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000007 /* T1Settings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +68,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10000000000000000000000E /* T1Settings in Frameworks */,
 				100000000000000000000005 /* T1Gestures in Frameworks */,
 				100000000000000000000004 /* T1Protocol in Frameworks */,
 			);
@@ -75,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10000000000000000000000F /* T1Settings in Frameworks */,
 				100000000000000000000007 /* T1Gestures in Frameworks */,
 				100000000000000000000006 /* T1Protocol in Frameworks */,
 			);
@@ -146,6 +150,7 @@
 			packageProductDependencies = (
 				D00000000000000000000002 /* T1Protocol */,
 				D00000000000000000000003 /* T1Gestures */,
+				D00000000000000000000006 /* T1Settings */,
 			);
 			productName = T1PlusApp;
 			productReference = 200000000000000000000005 /* T1 Plus Touchpad Support for macOS.app */;
@@ -167,6 +172,7 @@
 			packageProductDependencies = (
 				D00000000000000000000004 /* T1Protocol */,
 				D00000000000000000000005 /* T1Gestures */,
+				D00000000000000000000007 /* T1Settings */,
 			);
 			productName = T1PlusHelper;
 			productReference = 200000000000000000000006 /* T1PlusHelper.app */;
@@ -519,6 +525,14 @@
 		D00000000000000000000005 /* T1Gestures */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = T1Gestures;
+		};
+		D00000000000000000000006 /* T1Settings */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = T1Settings;
+		};
+		D00000000000000000000007 /* T1Settings */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = T1Settings;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

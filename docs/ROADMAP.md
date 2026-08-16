@@ -23,7 +23,8 @@
 - in progress: permission onboarding and `SMAppService` lifecycle
 - physical-hardware acceptance for pointer, click, drag, scroll, zoom, and three/four-finger actions
 - wake/reconnect/held-state soak and performance acceptance
-- native settings and bounded diagnostics
+- complete: native exact-device status and versioned, bounded settings with live helper reload
+- bounded diagnostics, reset, and uninstall
 
 ## Distribution
 

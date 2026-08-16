@@ -3,6 +3,7 @@ import Dispatch
 import IOKit.hid
 import T1Gestures
 import T1Protocol
+import T1Settings
 
 import struct OSLog.Logger
 
@@ -22,6 +23,7 @@ final class T1HelperRuntime: T1HIDInputDelegate {
   private var interactionActive = false
   private var inputSuspended = false
   private var requiresLiftBeforeInput = false
+  private var settingsObserver: T1SettingsObserver?
   private var signalSources: [DispatchSourceSignal] = []
   private var started = false
 
@@ -37,8 +39,12 @@ final class T1HelperRuntime: T1HIDInputDelegate {
     }
     inputSuspended = false
     requiresLiftBeforeInput = false
+    engine.configuration = T1SettingsStore.load().gestureConfiguration
     guard input.start() else { return false }
 
+    settingsObserver = T1SettingsObserver { [weak self] in
+      self?.reloadSettings()
+    }
     lifecycle.start()
     installSignalSources()
     started = true
@@ -52,6 +58,7 @@ final class T1HelperRuntime: T1HIDInputDelegate {
 
   func stop() {
     guard started else { return }
+    settingsObserver = nil
     input.stop()
     releaseOutputState(reason: "helper stop")
     lifecycle.stop()
@@ -102,6 +109,15 @@ final class T1HelperRuntime: T1HIDInputDelegate {
   private func requestStop() {
     stop()
     CFRunLoopStop(CFRunLoopGetMain())
+  }
+
+  private func reloadSettings() {
+    let configuration = T1SettingsStore.load().gestureConfiguration
+    guard configuration != engine.configuration else { return }
+    requiresLiftBeforeInput = interactionActive
+    releaseOutputState(reason: "settings changed")
+    engine.configuration = configuration
+    logger.notice("T1 Plus settings reloaded")
   }
 
   private func releaseOutputState(reason: String) {
