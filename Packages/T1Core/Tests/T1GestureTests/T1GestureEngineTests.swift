@@ -104,7 +104,7 @@ final class T1GestureEngineTests: XCTestCase {
     XCTAssertTrue(sink.actions.isEmpty)
   }
 
-  func testPhysicalButtonUsesDeepestContactAndFinishReleasesIt() {
+  func testPhysicalButtonUsesDeepestContactAndCancelReleasesIt() {
     var engine = T1GestureEngine()
     var sink = ActionCollector()
     let start: UInt64 = 1_000_000_000
@@ -114,7 +114,7 @@ final class T1GestureEngineTests: XCTestCase {
       at: start,
       into: &sink
     )
-    engine.finish(at: start + 20_000_000, into: &sink)
+    engine.cancel(at: start + 20_000_000, into: &sink)
 
     XCTAssertEqual(
       sink.actions,
@@ -123,5 +123,18 @@ final class T1GestureEngineTests: XCTestCase {
         .button(.right, phase: .released, clickCount: 1),
       ]
     )
+  }
+
+  func testCancelDoesNotConvertInterruptedContactIntoTap() {
+    var engine = T1GestureEngine()
+    var sink = ActionCollector()
+    let start: UInt64 = 1_000_000_000
+
+    engine.process(gestureFrame([(0, 500, 400)]), at: start, into: &sink)
+    engine.process(gestureFrame([(0, 500, 400)]), at: start + 40_000_000, into: &sink)
+    engine.process(gestureFrame([(0, 500, 400)]), at: start + 80_000_000, into: &sink)
+    engine.cancel(at: start + 100_000_000, into: &sink)
+
+    XCTAssertTrue(sink.actions.isEmpty)
   }
 }

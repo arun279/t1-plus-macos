@@ -33,9 +33,11 @@ Windows-preservation checks.
 
 The production engine is covered by deterministic synthetic tests for pointer motion, taps,
 double-click, tap-drag, secondary click, scrolling and phases, direction inversion, pinch, contact-ID
-retention, multi-finger actions, configuration bounds, and output-state cleanup. Private hardware
-replay established exact action-sequence parity with the reference engine across 15 valid traces and
-14,729 frames. Raw user captures are not distributed until explicitly curated and sanitized.
+retention, multi-finger actions, configuration bounds, interrupted-interaction cancellation, and
+output-state cleanup. The package smoke test also rejects a helper linked against known IOHID write
+entry points. Private hardware replay established exact action-sequence parity with the reference
+engine across 15 valid traces and 14,729 frames. Raw user captures are not distributed until
+explicitly curated and sanitized.
 
 Automated replay proves deterministic behavior for its inputs. It does not replace real-user
 operation of the signed application on a non-headless Mac.

@@ -38,6 +38,17 @@ final class T1TwoFingerGestureEngineTests: XCTestCase {
       })
   }
 
+  func testCancelEndsActiveScroll() {
+    var engine = T1GestureEngine()
+    var sink = ActionCollector()
+    let start: UInt64 = 1_000_000_000
+
+    processScrollTrace(engine: &engine, sink: &sink, start: start)
+    engine.cancel(at: start + 180_000_000, into: &sink)
+
+    XCTAssertEqual(scrollPhases(in: sink.actions), [.began, .changed, .ended])
+  }
+
   func testTwoFingerRadiusChangeEmitsZoomWithoutScroll() {
     var engine = T1GestureEngine()
     var sink = ActionCollector()
