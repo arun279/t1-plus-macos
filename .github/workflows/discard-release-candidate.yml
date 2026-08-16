@@ -1,0 +1,72 @@
+name: Discard release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact rejected draft version
+        required: true
+        type: string
+      candidate_rejected:
+        description: The draft candidate failed acceptance and must be discarded
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-candidate
+  cancel-in-progress: false
+
+jobs:
+  discard:
+    name: release / discard-rejected-candidate
+    if: github.ref == 'refs/heads/main' && inputs.candidate_rejected
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: release-publish
+    permissions:
+      contents: write # Required to delete the rejected draft release and tag.
+    steps:
+      - name: Check out protected main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify rejected draft identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          scripts/verify-release-metadata.sh "$REQUESTED_VERSION"
+          [[ $(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft) == true ]]
+          expected_title="T1 Plus Touchpad Support $RELEASE_TAG"
+          [[ $(gh release view "$RELEASE_TAG" --json name --jq .name) == "$expected_title" ]]
+          expected_assets=$(
+            printf '%s\n' \
+              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg" \
+              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg.sha256" |
+              sort
+          )
+          actual_assets=$(
+            gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | sort
+          )
+          [[ $actual_assets == "$expected_assets" ]]
+          target=$(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
+          git merge-base --is-ancestor "$target" "$GITHUB_SHA"
+      - name: Delete rejected draft and any candidate tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
+        run: |
+          gh release delete "$RELEASE_TAG" --cleanup-tag --yes
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            printf 'error: rejected draft still exists: %s\n' "$RELEASE_TAG" >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" > /dev/null 2>&1; then
+            printf 'error: rejected candidate tag still exists: %s\n' "$RELEASE_TAG" >&2
+            exit 1
+          fi

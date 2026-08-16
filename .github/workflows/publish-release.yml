@@ -1,0 +1,92 @@
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact accepted draft version
+        required: true
+        type: string
+      macos_acceptance_completed:
+        description: Exact draft artifact passed clean-Mac and hardware acceptance
+        required: true
+        type: boolean
+      windows_acceptance_completed:
+        description: The unchanged T1 Plus passed Windows regression acceptance
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: release / publish-accepted-candidate
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.macos_acceptance_completed &&
+      inputs.windows_acceptance_completed
+    runs-on: macos-26
+    timeout-minutes: 15
+    environment: release-publish
+    permissions:
+      attestations: read # Required to verify candidate provenance before publication.
+      contents: write # Required to publish the existing draft release.
+    steps:
+      - name: Check out protected main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify release metadata and exact source commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          scripts/verify-release-metadata.sh "$REQUESTED_VERSION"
+          [[ $(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft) == true ]]
+          [[ $(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish) == "$GITHUB_SHA" ]]
+          expected_title="T1 Plus Touchpad Support $RELEASE_TAG"
+          [[ $(gh release view "$RELEASE_TAG" --json name --jq .name) == "$expected_title" ]]
+          expected_notes=$(scripts/release-notes.sh "$REQUESTED_VERSION")
+          [[ $(gh release view "$RELEASE_TAG" --json body --jq .body) == "$expected_notes" ]]
+          expected_assets=$(
+            printf '%s\n' \
+              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg" \
+              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg.sha256" |
+              sort
+          )
+          actual_assets=$(
+            gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | sort
+          )
+          [[ $actual_assets == "$expected_assets" ]]
+      - name: Download and verify accepted draft assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          mkdir -p .build/release-download
+          gh release download "$RELEASE_TAG" --dir .build/release-download
+          dmg_path=".build/release-download/T1-Plus-Touchpad-Support-for-macOS-$RELEASE_VERSION.dmg"
+          checksum_path="$dmg_path.sha256"
+          [[ -f $dmg_path && -f $checksum_path ]]
+          (
+            cd .build/release-download
+            shasum -a 256 --check "$(basename "$checksum_path")"
+          )
+          gh attestation verify \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
+            "$dmg_path"
+          scripts/verify-release-dmg.sh "$dmg_path"
+      - name: Publish accepted release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
+        run: gh release edit "$RELEASE_TAG" --draft=false --latest

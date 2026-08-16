@@ -7,3 +7,4 @@ cd "$root"
 
 swift test --package-path Packages/T1Core --parallel
 scripts/test-dco.sh
+scripts/test-release-metadata.sh
