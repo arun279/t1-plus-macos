@@ -1,1 +1,8 @@
-// The helper remains inert until service startup is implemented.
+import func Darwin.exit
+
+let runtime = T1HelperRuntime()
+guard runtime.start() else {
+  exit(1)
+}
+runtime.run()
+runtime.stop()

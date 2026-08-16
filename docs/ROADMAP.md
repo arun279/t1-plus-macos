@@ -17,10 +17,12 @@
 
 ## Functional application
 
-- exact HID device matching and shared input
+- complete: exact HID device matching and shared input
+- complete: baseline CoreGraphics pointer, button, scroll, momentum, and shortcut output
+- complete: disconnect, stop, sleep, session, and signal cleanup in the helper
 - permission onboarding and `SMAppService` lifecycle
-- pointer, click, drag, scroll, zoom, and three/four-finger actions
-- disconnect, reconnect, sleep/wake, cancellation, and stuck-state recovery
+- physical-hardware acceptance for pointer, click, drag, scroll, zoom, and three/four-finger actions
+- wake/reconnect/held-state soak and performance acceptance
 - native settings and bounded diagnostics
 
 ## Distribution

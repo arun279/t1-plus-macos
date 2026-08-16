@@ -166,11 +166,11 @@ public struct T1GestureEngine: Sendable {
     interaction.previousY = geometry.centroidY
   }
 
-  public mutating func finish<Sink: T1GestureActionSink>(
+  public mutating func cancel<Sink: T1GestureActionSink>(
     at timestampNanoseconds: UInt64,
     into sink: inout Sink
   ) {
-    finishInteraction(at: timestampNanoseconds, lifted: true, sink: &sink)
+    finishInteraction(at: timestampNanoseconds, lifted: false, sink: &sink)
     if physicalButtonDown {
       emitButton(physicalButton, phase: .released, clickCount: 1, sink: &sink)
     }
@@ -178,6 +178,13 @@ public struct T1GestureEngine: Sendable {
     tapDragDown = false
     suppressTapUntilLift = false
     ignoreUntilAllLift = false
+    pointerRemainderX = 0
+    pointerRemainderY = 0
+    logicalCursorX = 0
+    logicalCursorY = 0
+    scrollRemainderX = 0
+    scrollRemainderY = 0
+    lastTap = nil
   }
 }
 

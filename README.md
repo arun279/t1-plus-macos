@@ -43,9 +43,12 @@ checks and the hardware test boundary.
 ## Project status
 
 The raw report decoder and semantic gesture engine are implemented in Swift and covered by
-deterministic tests. The language decision and release-build evidence are recorded in
-[ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). The settings UI, helper lifecycle,
-device input, and event-output backends remain under development. No public release is ready yet.
+deterministic tests. The helper now connects through shared, read-only IOHID input and translates
+semantic actions through CoreGraphics, with reconnect and output-state cleanup. The language
+decision and release-build evidence are recorded in
+[ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Permission onboarding,
+`SMAppService` registration, settings, diagnostics, and full hardware acceptance remain under
+development. No public release is ready yet.
 
 ## Independence and trademarks
 
