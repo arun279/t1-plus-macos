@@ -13,17 +13,16 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
   private var output = CGEventOutput()
   private lazy var input = T1HIDInput(delegate: self)
   private lazy var lifecycle = WorkspaceLifecycleMonitor(
-    onSuspend: { [weak self] reason in
-      self?.suspendInput(reason: reason)
+    onSuspend: { [weak self] reason, description in
+      self?.suspendInput(reason, description: description)
     },
-    onResume: { [weak self] reason in
-      self?.resumeInput(reason: reason)
+    onResume: { [weak self] reason, description in
+      self?.resumeInput(reason, description: description)
     }
   )
   private var engine = T1GestureEngine()
+  private var inputGate = T1InputGate()
   private var interactionActive = false
-  private var inputSuspended = false
-  private var requiresLiftBeforeInput = false
   private var settingsObserver: T1SettingsObserver?
   private var signalSources: [DispatchSourceSignal] = []
   private var started = false
@@ -38,10 +37,13 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
       logger.error("Accessibility event-posting permission is not granted")
       return false
     }
-    inputSuspended = false
-    requiresLiftBeforeInput = false
+    inputGate = T1InputGate()
     engine.configuration = T1SettingsStore.load().gestureConfiguration
-    guard input.start() else { return false }
+    lifecycle.start()
+    guard input.start() else {
+      lifecycle.stop()
+      return false
+    }
 
     settingsObserver = T1SettingsObserver()
     NotificationCenter.default.addObserver(
@@ -50,7 +52,6 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
       name: T1SettingsObserver.changedNotification,
       object: nil
     )
-    lifecycle.start()
     installSignalSources()
     started = true
     logger.notice("T1 Plus helper started")
@@ -80,14 +81,7 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
 
   func hidInput(_: T1HIDInput, didReceive frame: T1Frame, at timestampNanoseconds: UInt64) {
     let hasInteraction = frame.activeContactCount > 0 || frame.isPrimaryButtonPressed
-    if inputSuspended {
-      requiresLiftBeforeInput = hasInteraction
-      return
-    }
-    if requiresLiftBeforeInput {
-      requiresLiftBeforeInput = hasInteraction
-      return
-    }
+    guard inputGate.shouldProcess(hasInteraction: hasInteraction) else { return }
     if hasInteraction, !interactionActive {
       output.beginInteraction()
     }
@@ -129,7 +123,7 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
   private func reloadSettings() {
     let configuration = T1SettingsStore.load().gestureConfiguration
     guard configuration != engine.configuration else { return }
-    requiresLiftBeforeInput = interactionActive
+    inputGate.requireLift(interactionActive: interactionActive)
     releaseOutputState(reason: "settings changed")
     engine.configuration = configuration
     logger.notice("T1 Plus settings reloaded")
@@ -142,14 +136,16 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
     logger.info("Released output state: \(reason, privacy: .public)")
   }
 
-  private func suspendInput(reason: String) {
-    inputSuspended = true
-    requiresLiftBeforeInput = interactionActive
-    releaseOutputState(reason: reason)
+  private func suspendInput(_ reason: T1InputSuspensionReason, description: String) {
+    inputGate.suspend(reason, interactionActive: interactionActive)
+    releaseOutputState(reason: description)
   }
 
-  private func resumeInput(reason: String) {
-    inputSuspended = false
-    logger.info("Resumed input after: \(reason, privacy: .public)")
+  private func resumeInput(_ reason: T1InputSuspensionReason, description: String) {
+    if inputGate.resume(reason) {
+      logger.info("Resumed input after: \(description, privacy: .public)")
+    } else {
+      logger.info("Input remains suspended after: \(description, privacy: .public)")
+    }
   }
 }

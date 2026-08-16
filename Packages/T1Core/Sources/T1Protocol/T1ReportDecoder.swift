@@ -1,6 +1,8 @@
 public enum T1ReportDecodeError: Error, Equatable, Sendable {
   case unsupportedReportID(UInt32)
   case invalidReportLength(Int)
+  case invalidActiveContact(slot: Int, x: UInt16, y: UInt16)
+  case invalidReportedContactCount(UInt8)
 }
 
 public enum T1ReportDecoder {
@@ -47,17 +49,40 @@ public enum T1ReportDecoder {
       )
     }
 
+    let contacts = T1ContactSlots(
+      first: contact(at: 0),
+      second: contact(at: 1),
+      third: contact(at: 2),
+      fourth: contact(at: 3)
+    )
+    try validate(contacts)
+
     let frameFlags = payload[18]
+    let reportedContactCount = frameFlags & 0x7F
+    guard reportedContactCount <= T1DeviceIdentity.maximumContacts else {
+      throw T1ReportDecodeError.invalidReportedContactCount(reportedContactCount)
+    }
     return T1Frame(
-      contacts: T1ContactSlots(
-        first: contact(at: 0),
-        second: contact(at: 1),
-        third: contact(at: 2),
-        fourth: contact(at: 3)
-      ),
+      contacts: contacts,
       scanTime: UInt16(payload[16]) | (UInt16(payload[17]) << 8),
-      reportedContactCount: frameFlags & 0x7F,
+      reportedContactCount: reportedContactCount,
       isPrimaryButtonPressed: frameFlags & 0x80 != 0
     )
+  }
+
+  private static func validate(_ contacts: T1ContactSlots) throws {
+    for slot in 0..<contactSlotCount {
+      let contact = contacts[slot]
+      guard
+        !contact.isActive
+          || (contact.x <= T1DeviceIdentity.maximumX && contact.y <= T1DeviceIdentity.maximumY)
+      else {
+        throw T1ReportDecodeError.invalidActiveContact(
+          slot: slot,
+          x: contact.x,
+          y: contact.y
+        )
+      }
+    }
   }
 }
