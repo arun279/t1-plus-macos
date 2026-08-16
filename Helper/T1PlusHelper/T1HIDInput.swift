@@ -1,6 +1,7 @@
 import IOKit.hid
-import OSLog
 import T1Protocol
+
+import struct OSLog.Logger
 
 protocol T1HIDInputDelegate: AnyObject {
   func hidInput(_ input: T1HIDInput, didReceive frame: T1Frame, at timestampNanoseconds: UInt64)

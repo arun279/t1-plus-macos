@@ -1,9 +1,10 @@
 import CoreGraphics
 import Dispatch
 import IOKit.hid
-import OSLog
 import T1Gestures
 import T1Protocol
+
+import struct OSLog.Logger
 
 final class T1HelperRuntime: T1HIDInputDelegate {
   private let logger = Logger(subsystem: "io.github.arun279.t1plus", category: "helper")
@@ -46,7 +47,7 @@ final class T1HelperRuntime: T1HIDInputDelegate {
   }
 
   func run() {
-    RunLoop.main.run()
+    CFRunLoopRun()
   }
 
   func stop() {
