@@ -6,3 +6,4 @@ root=$(cd "$script_dir/.." && pwd)
 cd "$root"
 
 swift test --package-path Packages/T1Core --parallel
+scripts/test-dco.sh

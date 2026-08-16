@@ -3,5 +3,12 @@ set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
 cd "$root"
+export PATH="$root/.build/local-tools:$PATH"
+
+if ! git diff --quiet || ! git diff --cached --quiet ||
+  [[ -n $(git ls-files --others --exclude-standard) ]]; then
+  printf 'error: pre-push validation requires a clean working tree\n' >&2
+  exit 1
+fi
 
 scripts/check.sh

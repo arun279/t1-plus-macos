@@ -11,9 +11,12 @@ vendor material, credentials, signing assets, and machine-specific logs do not b
 - Lint: `scripts/lint.sh`
 - Build: `scripts/build.sh`
 - Test: `scripts/test.sh`
+- Native UI test (active macOS GUI required): `scripts/test-ui.sh`
+- DCO check: `scripts/check-dco.sh BASE_COMMIT HEAD_COMMIT`
 - Full gate: `scripts/check.sh`
 
-Run the full gate before pushing. Do not bypass hooks or required GitHub checks.
+Run the full gate before pushing. Run the native UI test for app/UI changes; required CI always runs
+it in an active graphical session. Do not bypass hooks or required GitHub checks.
 
 ## Engineering rules
 

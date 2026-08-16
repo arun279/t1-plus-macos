@@ -23,7 +23,7 @@ continues to use its factory firmware on Windows.
 - `App/T1PlusApp`: native SwiftUI/AppKit settings application
 - `Helper/T1PlusHelper`: bundled per-user input helper
 - `Packages/T1Core`: report decoding and gesture semantics with no UI dependency
-- `docs`: standalone architecture, protocol, security, and testing documentation
+- `docs`: standalone architecture, protocol, and engineering-decision documentation
 - `scripts`: the canonical build, test, formatting, and analysis commands
 
 ## Development
@@ -32,13 +32,17 @@ The supported production toolchain is Xcode 26.6. The core package can also be d
 matching Swift command-line toolchain.
 
 ```sh
+scripts/prepare-local-tools.sh # optional repo-local tools; no Homebrew or global install
 scripts/bootstrap.sh
 scripts/check.sh
 ```
 
-`bootstrap.sh` verifies required tools and configures this clone's Git hooks. It does not install
-software. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/TESTING.md](docs/TESTING.md) for the exact
-checks and the hardware test boundary.
+`prepare-local-tools.sh` downloads checksum-pinned macOS binaries into ignored
+`.build/local-tools`; omit it when the pinned tools are already on `PATH`. `bootstrap.sh` only verifies
+tools and configures this clone's Git hooks. `check.sh` checks formatting, lints, tests, analyzes,
+builds, validates the app bundle, and scans for secrets. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for individual commands, CI behavior, and the hardware test
+boundary.
 
 ## Project status
 
@@ -48,11 +52,12 @@ semantic actions through CoreGraphics, with reconnect and output-state cleanup. 
 shows the two required macOS permissions and controls the bundled helper through `SMAppService`.
 The T1 Plus can be paired before or after support is enabled; the helper waits for it and reconnects
 automatically. The app also reports exact-device presence and configures pointer speed, tapping,
-scrolling, and gestures through versioned, validated per-user settings. The language decision and
-release-build evidence are recorded in
+scrolling, and gestures through versioned, validated per-user settings. It can export a bounded,
+local diagnostics report and remove the helper registration and settings without touching the
+device. The language decision and release-build evidence are recorded in
 [ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Signed-app permission and
-service lifecycle acceptance, diagnostics, and full hardware acceptance remain under development.
-No public release is ready yet.
+service lifecycle acceptance and full hardware acceptance remain under development. No public
+release is ready yet.
 
 ## Independence and trademarks
 
