@@ -68,7 +68,7 @@ struct SupportView: View {
         Toggle(
           isOn: Binding(
             get: { model.supportEnabled },
-            set: model.setSupportEnabled
+            set: { enabled in model.setSupportEnabled(enabled) }
           )
         ) {
           VStack(alignment: .leading, spacing: 2) {
