@@ -15,6 +15,7 @@ jobs:
   quality:
     name: quality / format-lint
     runs-on: macos-26
+    timeout-minutes: 20
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -34,6 +35,7 @@ jobs:
   core-tests:
     name: test / core
     runs-on: macos-26
+    timeout-minutes: 15
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -44,9 +46,32 @@ jobs:
       - name: Test core
         run: scripts/test.sh
 
+  ui-tests:
+    name: test / ui
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - name: Verify toolchain
+        run: scripts/verify-ci-toolchain.sh
+      - name: Operate the native application
+        run: scripts/test-ui.sh
+      - name: Preserve UI test diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ui-test-diagnostics
+          path: .build/UITestResults
+          if-no-files-found: ignore
+          retention-days: 7
+
   build:
     name: build / macos
     runs-on: macos-26
+    timeout-minutes: 20
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -73,6 +98,7 @@ jobs:
     name: test / app-package
     needs: build
     runs-on: macos-26
+    timeout-minutes: 10
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0

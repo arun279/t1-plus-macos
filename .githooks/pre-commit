@@ -3,6 +3,15 @@ set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
 cd "$root"
+export PATH="$root/.build/local-tools:$PATH"
+
+require_fully_staged() {
+  if ! git diff --quiet -- "$@"; then
+    printf 'error: staged source files also contain unstaged changes\n' >&2
+    printf 'stage or stash those changes before committing so formatting cannot include them\n' >&2
+    exit 1
+  fi
+}
 
 swift_files=()
 while IFS= read -r -d '' path; do
@@ -10,6 +19,7 @@ while IFS= read -r -d '' path; do
 done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.swift')
 
 if ((${#swift_files[@]} > 0)); then
+  require_fully_staged "${swift_files[@]}"
   swift format format --configuration .swift-format --in-place --parallel "${swift_files[@]}"
   git add -- "${swift_files[@]}"
   swift format lint --configuration .swift-format --strict "${swift_files[@]}"
@@ -22,9 +32,24 @@ while IFS= read -r -d '' path; do
 done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.sh' '.githooks/*')
 
 if ((${#shell_files[@]} > 0)); then
+  require_fully_staged "${shell_files[@]}"
   shfmt -w -i 2 -ci -sr "${shell_files[@]}"
   git add -- "${shell_files[@]}"
   shellcheck -x "${shell_files[@]}"
+fi
+
+workflow_files=()
+while IFS= read -r -d '' path; do
+  workflow_files+=("$path")
+done < <(
+  git diff --cached --name-only --diff-filter=ACMR -z -- \
+    '.github/workflows/*.yml' \
+    '.github/workflows/*.yaml'
+)
+
+if ((${#workflow_files[@]} > 0)); then
+  require_fully_staged "${workflow_files[@]}"
+  actionlint "${workflow_files[@]}"
 fi
 
 git diff --cached --check

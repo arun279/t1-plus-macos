@@ -4,6 +4,7 @@ set -euo pipefail
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 root=$(cd "$script_dir/.." && pwd)
 cd "$root"
+export PATH="$root/.build/local-tools:$PATH"
 
 # shellcheck source=Tools/versions.env
 source Tools/versions.env
@@ -31,7 +32,5 @@ require_version "ShellCheck" "$SHELLCHECK_VERSION" shellcheck --version
 require_version "shfmt" "$SHFMT_VERSION" shfmt --version
 require_version "actionlint" "$ACTIONLINT_VERSION" actionlint -version
 require_version "Gitleaks" "$GITLEAKS_VERSION" gitleaks version
-require_version "zizmor" "$ZIZMOR_VERSION" zizmor --version
-
 git config core.hooksPath .githooks
 printf 'Verified tools and configured core.hooksPath=.githooks for this clone.\n'

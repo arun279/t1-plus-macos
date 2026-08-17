@@ -1,10 +1,15 @@
+import Foundation
 import SwiftUI
 import T1Settings
+import UniformTypeIdentifiers
 
 struct SupportView: View {
   @ObservedObject var model: T1SupportModel
   @Environment(\.scenePhase)
   private var scenePhase
+  @State private var diagnosticsDocument = DiagnosticsDocument(text: "")
+  @State private var exportingDiagnostics = false
+  @State private var confirmingRemoval = false
 
   var body: some View {
     ScrollView {
@@ -14,7 +19,9 @@ struct SupportView: View {
         permissions
         support
         error
+        notice
         touchpadSettings
+        diagnosticsAndRemoval
         privacy
       }
       .padding(24)
@@ -25,8 +32,33 @@ struct SupportView: View {
         model.refresh()
       }
     }
+    .fileExporter(
+      isPresented: $exportingDiagnostics,
+      document: diagnosticsDocument,
+      contentType: .plainText,
+      defaultFilename: "t1-plus-diagnostics"
+    ) { result in
+      model.completeDiagnosticsExport(result)
+    }
+    .alert(
+      "Remove T1 Plus support?",
+      isPresented: $confirmingRemoval
+    ) {
+      Button("Remove Support", role: .destructive) {
+        model.removeSupport()
+      }
+      Button("Cancel", role: .cancel) {}
+    } message: {
+      Text(
+        "This unregisters the background helper and clears app settings. "
+          + "It does not change the touchpad or its firmware. macOS keeps granted permissions "
+          + "until you remove them in System Settings."
+      )
+    }
   }
+}
 
+private extension SupportView {
   private var status: some View {
     GroupBox("Status") {
       HStack(spacing: 20) {
@@ -107,6 +139,8 @@ struct SupportView: View {
           }
         }
         .toggleStyle(.switch)
+        .accessibilityIdentifier("enable-support-toggle")
+        .accessibilityLabel("Enable T1 Plus support")
         .disabled(!model.supportEnabled && !model.canEnableSupport)
 
         if !model.canEnableSupport {
@@ -140,6 +174,15 @@ struct SupportView: View {
       Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
         .font(.callout)
         .foregroundStyle(.red)
+        .textSelection(.enabled)
+    }
+  }
+
+  @ViewBuilder private var notice: some View {
+    if let noticeMessage = model.noticeMessage {
+      Label(noticeMessage, systemImage: "checkmark.circle.fill")
+        .font(.callout)
+        .foregroundStyle(.green)
         .textSelection(.enabled)
     }
   }
@@ -218,6 +261,32 @@ struct SupportView: View {
     }
   }
 
+  private var diagnosticsAndRemoval: some View {
+    GroupBox("Diagnostics and Removal") {
+      VStack(alignment: .leading, spacing: 12) {
+        Text(
+          "Diagnostics include only version, architecture, permission, device, support, "
+            + "backend, and bounded settings status. They never include touch data, logs, "
+            + "user identity, paths, or serial numbers."
+        )
+        .font(.callout)
+        .foregroundStyle(.secondary)
+
+        HStack {
+          Button("Save Diagnostics…") {
+            diagnosticsDocument = DiagnosticsDocument(text: model.makeDiagnosticsReport())
+            exportingDiagnostics = true
+          }
+          Spacer()
+          Button("Remove Support…", role: .destructive) {
+            confirmingRemoval = true
+          }
+        }
+      }
+      .padding(.top, 4)
+    }
+  }
+
   private var privacy: some View {
     Label(
       "Touch data is processed locally and is never recorded or sent anywhere.",
@@ -225,6 +294,30 @@ struct SupportView: View {
     )
     .font(.callout)
     .foregroundStyle(.secondary)
+  }
+}
+
+private struct DiagnosticsDocument: FileDocument {
+  static let readableContentTypes: [UTType] = [.plainText]
+
+  let text: String
+
+  init(text: String) {
+    self.text = text
+  }
+
+  init(configuration: ReadConfiguration) throws {
+    guard
+      let data = configuration.file.regularFileContents,
+      let text = String(data: data, encoding: .utf8)
+    else {
+      throw CocoaError(.fileReadCorruptFile)
+    }
+    self.text = text
+  }
+
+  func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
+    FileWrapper(regularFileWithContents: Data(text.utf8))
   }
 }
 
@@ -250,6 +343,7 @@ private struct SettingsSlider: View {
       Text(title)
         .frame(width: 100, alignment: .leading)
       Slider(value: $value, in: range, onEditingChanged: onEditingChanged)
+        .accessibilityLabel(title)
       Text(value, format: .number.precision(.fractionLength(2)))
         .monospacedDigit()
         .frame(width: 36, alignment: .trailing)

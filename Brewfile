@@ -1,6 +1,0 @@
-brew "actionlint"
-brew "gitleaks"
-brew "shellcheck"
-brew "shfmt"
-brew "swiftlint"
-brew "zizmor"

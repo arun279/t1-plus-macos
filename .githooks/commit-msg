@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (($# != 1)); then
+  printf 'usage: %s COMMIT_MESSAGE_FILE\n' "$0" >&2
+  exit 64
+fi
+
+author=$(git var GIT_AUTHOR_IDENT | sed 's/>.*/>/')
+if ! grep -Fqx "Signed-off-by: $author" "$1"; then
+  printf 'error: commit must include: Signed-off-by: %s\n' "$author" >&2
+  printf 'use git commit -s to certify the Developer Certificate of Origin\n' >&2
+  exit 1
+fi

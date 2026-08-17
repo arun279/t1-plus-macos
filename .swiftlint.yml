@@ -3,7 +3,9 @@ strict: true
 included:
   - App
   - Helper
-  - Packages
+  - Packages/T1Core/Package.swift
+  - Packages/T1Core/Sources
+  - Packages/T1Core/Tests
 
 excluded:
   - .build

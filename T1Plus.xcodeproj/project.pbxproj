@@ -22,6 +22,8 @@
 		10000000000000000000000D /* SupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* SupportView.swift */; };
 		10000000000000000000000E /* T1Settings in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000006 /* T1Settings */; };
 		10000000000000000000000F /* T1Settings in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000007 /* T1Settings */; };
+		100000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* Assets.xcassets */; };
+		100000000000000000000011 /* T1PlusAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* T1PlusAppUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +33,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 800000000000000000000002;
 			remoteInfo = T1PlusHelper;
+		};
+		300000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 900000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 800000000000000000000001;
+			remoteInfo = T1PlusApp;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -61,6 +70,9 @@
 		20000000000000000000000A /* WorkspaceLifecycleMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceLifecycleMonitor.swift; sourceTree = "<group>"; };
 		20000000000000000000000B /* T1SupportModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1SupportModel.swift; sourceTree = "<group>"; };
 		20000000000000000000000C /* SupportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportView.swift; sourceTree = "<group>"; };
+		20000000000000000000000D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		20000000000000000000000E /* T1PlusAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1PlusAppUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000F /* T1PlusAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = T1PlusAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +96,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		500000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -91,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				600000000000000000000002 /* App */,
+				600000000000000000000005 /* App UI Tests */,
 				600000000000000000000003 /* Helper */,
 				600000000000000000000004 /* Products */,
 			);
@@ -102,6 +122,7 @@
 				200000000000000000000001 /* T1PlusApp.swift */,
 				20000000000000000000000B /* T1SupportModel.swift */,
 				20000000000000000000000C /* SupportView.swift */,
+				20000000000000000000000D /* Assets.xcassets */,
 				200000000000000000000002 /* Info.plist */,
 			);
 			path = App/T1PlusApp;
@@ -125,9 +146,18 @@
 			children = (
 				200000000000000000000005 /* T1 Plus Touchpad Support for macOS.app */,
 				200000000000000000000006 /* T1PlusHelper.app */,
+				20000000000000000000000F /* T1PlusAppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
+		};
+		600000000000000000000005 /* App UI Tests */ = {
+			isa = PBXGroup;
+			children = (
+				20000000000000000000000E /* T1PlusAppUITests.swift */,
+			);
+			path = App/T1PlusAppUITests;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -178,6 +208,25 @@
 			productReference = 200000000000000000000006 /* T1PlusHelper.app */;
 			productType = "com.apple.product-type.application";
 		};
+		800000000000000000000003 /* T1PlusAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000004 /* Build configuration list for PBXNativeTarget "T1PlusAppUITests" */;
+			buildPhases = (
+				700000000000000000000005 /* Sources */,
+				500000000000000000000003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B00000000000000000000002 /* PBXTargetDependency */,
+			);
+			name = T1PlusAppUITests;
+			packageProductDependencies = (
+			);
+			productName = T1PlusAppUITests;
+			productReference = 20000000000000000000000F /* T1PlusAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -193,6 +242,10 @@
 					};
 					800000000000000000000002 = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					800000000000000000000003 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 800000000000000000000001;
 					};
 				};
 			};
@@ -215,6 +268,7 @@
 			targets = (
 				800000000000000000000001 /* T1PlusApp */,
 				800000000000000000000002 /* T1PlusHelper */,
+				800000000000000000000003 /* T1PlusAppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -224,6 +278,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				100000000000000000000010 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,6 +314,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		700000000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100000000000000000000011 /* T1PlusAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -266,6 +329,11 @@
 			isa = PBXTargetDependency;
 			target = 800000000000000000000002 /* T1PlusHelper */;
 			targetProxy = 300000000000000000000001 /* PBXContainerItemProxy */;
+		};
+		B00000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 800000000000000000000001 /* T1PlusApp */;
+			targetProxy = 300000000000000000000002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -395,6 +463,7 @@
 		C00000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -415,6 +484,7 @@
 		C00000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -470,6 +540,46 @@
 			};
 			name = Release;
 		};
+		C00000000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.arun279.t1plus.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = T1PlusApp;
+			};
+			name = Debug;
+		};
+		C00000000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.arun279.t1plus.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = T1PlusApp;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -496,6 +606,15 @@
 			buildConfigurations = (
 				C00000000000000000000005 /* Debug */,
 				C00000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000004 /* Build configuration list for PBXNativeTarget "T1PlusAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C00000000000000000000007 /* Debug */,
+				C00000000000000000000008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

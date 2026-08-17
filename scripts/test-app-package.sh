@@ -16,11 +16,15 @@ info_plist="$app_path/Contents/Info.plist"
 helper_path="$app_path/Contents/Library/LoginItems/T1PlusHelper.app"
 helper_executable="$helper_path/Contents/MacOS/T1PlusHelper"
 app_executable="$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS"
+icon_assets=App/T1PlusApp/Assets.xcassets/AppIcon.appiconset
 
 [[ $(plutil -extract CFBundleIdentifier raw "$info_plist") == io.github.arun279.t1plus ]]
 [[ $(plutil -extract CFBundleShortVersionString raw "$info_plist") == "$(< VERSION)" ]]
+[[ $(plutil -extract CFBundleIconName raw "$info_plist") == AppIcon ]]
 [[ $(plutil -extract NSInputMonitoringUsageDescription raw "$info_plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ -x $app_executable ]]
+[[ -f $app_path/Contents/Resources/Assets.car ]]
+[[ -f $app_path/Contents/Resources/AppIcon.icns ]]
 [[ -d $helper_path ]]
 [[ $(plutil -extract CFBundleIdentifier raw "$helper_path/Contents/Info.plist") == io.github.arun279.t1plus.helper ]]
 [[ $(plutil -extract LSBackgroundOnly raw "$helper_path/Contents/Info.plist") == true ]]
@@ -28,18 +32,43 @@ app_executable="$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS"
 [[ $(plutil -extract NSInputMonitoringUsageDescription raw "$helper_path/Contents/Info.plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ -x $helper_executable ]]
 
+[[ $(find "$icon_assets" -type f -name '*.png' | wc -l | tr -d ' ') == 10 ]]
+icon_names=(
+  icon_16x16.png
+  icon_16x16@2x.png
+  icon_32x32.png
+  icon_32x32@2x.png
+  icon_128x128.png
+  icon_128x128@2x.png
+  icon_256x256.png
+  icon_256x256@2x.png
+  icon_512x512.png
+  icon_512x512@2x.png
+)
+icon_sizes=(16 32 32 64 128 256 256 512 512 1024)
+for icon_index in "${!icon_names[@]}"; do
+  icon_name=${icon_names[$icon_index]}
+  icon="$icon_assets/$icon_name"
+  expected_size=${icon_sizes[$icon_index]}
+  grep -Fq "\"filename\": \"$icon_name\"" "$icon_assets/Contents.json"
+  if [[ $(sips -g pixelWidth "$icon" | awk '/pixelWidth/ { print $2 }') != "$expected_size" ]] ||
+    [[ $(sips -g pixelHeight "$icon" | awk '/pixelHeight/ { print $2 }') != "$expected_size" ]] ||
+    ! sips -g hasAlpha "$icon" | grep -q 'hasAlpha: no'; then
+    printf 'error: app icon rendition has invalid dimensions or opacity: %s\n' "$icon" >&2
+    exit 1
+  fi
+done
+
 for plist in "$info_plist" "$helper_path/Contents/Info.plist"; do
-  for forbidden_key in \
-    NSAppleEventsUsageDescription \
-    NSBluetoothAlwaysUsageDescription \
-    NSBluetoothPeripheralUsageDescription \
-    NSScreenCaptureUsageDescription \
-    NSSystemAdministrationUsageDescription; do
-    if plutil -extract "$forbidden_key" raw "$plist" > /dev/null 2>&1; then
-      printf 'error: app bundle declares forbidden permission key: %s\n' "$forbidden_key" >&2
+  while IFS= read -r usage_key; do
+    if [[ $usage_key != NSInputMonitoringUsageDescription ]]; then
+      printf 'error: app bundle declares permission outside its budget: %s\n' "$usage_key" >&2
       exit 1
     fi
-  done
+  done < <(
+    plutil -convert xml1 -o - "$plist" |
+      sed -n 's:.*<key>\(NS[^<]*UsageDescription\)</key>.*:\1:p'
+  )
 done
 
 app_architectures=$(lipo -archs "$app_executable")
