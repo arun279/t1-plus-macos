@@ -46,6 +46,36 @@ T1 Plus acceptance. A release also requires reconnect, soak, removal, rollback, 
 preservation checks. Automated replay does not replace operating the signed application normally on
 a non-headless Mac.
 
+## Releases
+
+Releases are built from protected `main` by GitHub Actions. Do not build or publish a release from a
+developer workstation.
+
+1. Merge a version-preparation pull request that updates `VERSION`, every Xcode marketing version,
+   the shared positive build number, and a dated `CHANGELOG.md` section.
+2. Run **Release candidate** with that exact version. The protected `release-signing` environment
+   builds the universal app, signs it with Developer ID, creates and signs the disk image, submits it
+   for notarization, staples it, verifies Gatekeeper acceptance, records provenance, and creates a
+   draft GitHub release.
+3. Test the exact draft disk image on a clean supported Mac with a physical T1 Plus. Cover fresh
+   permissions, pairing before and after installation, enable and disable, gestures, reconnect,
+   sleep and wake, removal, rollback, and the unchanged device on Windows.
+4. If acceptance fails, run **Discard release candidate** before preparing a corrected candidate.
+   If it passes, run **Publish release** and attest both macOS and Windows acceptance. The protected
+   `release-publish` environment publishes the already accepted bytes without rebuilding them.
+
+`release-signing` requires these environment secrets:
+
+- `APPLE_DEVELOPER_ID_P12_BASE64`
+- `APPLE_DEVELOPER_ID_P12_PASSWORD`
+- `APPLE_TEAM_ID`
+- `APPLE_NOTARY_ISSUER_ID`
+- `APPLE_NOTARY_KEY_ID`
+- `APPLE_NOTARY_KEY_P8_BASE64`
+
+Signing certificates and notarization keys must remain in GitHub environment secrets. They must not
+be committed, uploaded as ordinary artifacts, or copied into a release.
+
 ## Contribution terms
 
 By contributing, you certify that you have the right to submit the work under Apache-2.0 and agree

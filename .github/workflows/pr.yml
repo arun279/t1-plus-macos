@@ -68,6 +68,24 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  intel:
+    name: test / intel
+    runs-on: macos-26-intel
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify toolchain
+        run: scripts/verify-ci-toolchain.sh
+      - name: Test core on Intel
+        run: scripts/test.sh
+      - name: Build and verify universal app on Intel
+        run: |
+          scripts/build.sh Release
+          scripts/test-app-package.sh
+
   build:
     name: build / macos
     runs-on: macos-26
@@ -86,11 +104,19 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent
           '.build/DerivedData/Build/Products/Release/T1 Plus Touchpad Support for macOS.app'
           .build/T1PlusApp.zip
+      - name: Package unsigned disk image
+        run: >-
+          scripts/create-dmg.sh
+          '.build/DerivedData/Build/Products/Release/T1 Plus Touchpad Support for macOS.app'
+          "$(< VERSION)"
+          .build/T1PlusApp-unsigned.dmg
       - name: Upload unsigned app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: unsigned-app
-          path: .build/T1PlusApp.zip
+          path: |
+            .build/T1PlusApp.zip
+            .build/T1PlusApp-unsigned.dmg
           if-no-files-found: error
           retention-days: 1
 
@@ -114,4 +140,6 @@ jobs:
           mkdir -p .build/artifacts/extracted
           ditto -x -k .build/artifacts/T1PlusApp.zip .build/artifacts/extracted
       - name: Verify app package
-        run: scripts/test-app-package.sh .build/artifacts/extracted
+        run: |
+          scripts/test-app-package.sh .build/artifacts/extracted
+          scripts/test-dmg-package.sh .build/artifacts/T1PlusApp-unsigned.dmg
