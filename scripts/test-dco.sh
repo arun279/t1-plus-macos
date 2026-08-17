@@ -6,6 +6,10 @@ checker="$script_dir/check-dco.sh"
 fixture_root=$(mktemp -d "${TMPDIR:-/tmp}/t1-plus-dco-tests.XXXXXX")
 trap 'rm -rf "$fixture_root"' EXIT
 
+while IFS= read -r variable; do
+  unset "$variable"
+done < <(git rev-parse --local-env-vars)
+
 make_repository() {
   local name=$1
   local repository="$fixture_root/$name"
@@ -49,6 +53,26 @@ git -C "$repository" commit -q --allow-empty \
 if (cd "$repository" && "$checker" "$base" HEAD) > /dev/null 2>&1; then
   printf 'error: DCO check accepted a different bot identity\n' >&2
   exit 1
+fi
+
+if [[ ${T1_DCO_ISOLATION_PROBE:-} != 1 ]]; then
+  parent="$fixture_root/hook-parent"
+  mkdir "$parent"
+  git -C "$parent" init -q
+  git -C "$parent" config user.name 'Parent Contributor'
+  git -C "$parent" config user.email 'parent@example.com'
+  git -C "$parent" config commit.gpgsign false
+  git -C "$parent" commit -q --allow-empty -m 'Parent baseline'
+  parent_head=$(git --git-dir="$parent/.git" rev-parse HEAD)
+  parent_config=$(git --git-dir="$parent/.git" config --local --null --list | shasum -a 256)
+
+  GIT_DIR="$parent/.git" \
+    GIT_WORK_TREE="$parent" \
+    T1_DCO_ISOLATION_PROBE=1 \
+    "$script_dir/test-dco.sh" > /dev/null
+
+  [[ $(git --git-dir="$parent/.git" rev-parse HEAD) == "$parent_head" ]]
+  [[ $(git --git-dir="$parent/.git" config --local --null --list | shasum -a 256) == "$parent_config" ]]
 fi
 
 printf 'DCO fixtures passed.\n'
