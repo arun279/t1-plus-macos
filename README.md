@@ -6,8 +6,29 @@ This project is building a native macOS settings app and a small per-user helper
 T1 Plus multitouch HID reports into supported macOS input events. The device remains unmodified and
 continues to use its factory firmware on Windows.
 
-> [!IMPORTANT]
-> This repository is under active development. It does not yet publish an installable release.
+## Install
+
+T1 Plus Touchpad Support requires macOS 13 or later.
+
+1. Download the disk image and matching `.sha256` file from the
+   [latest GitHub release](https://github.com/arun279/t1-plus-macos/releases/latest).
+2. Optionally verify the download from Terminal in the download directory:
+
+   ```sh
+   shasum -a 256 --check T1-Plus-Touchpad-Support-for-macOS-*.dmg.sha256
+   ```
+
+3. Open the disk image and drag **T1 Plus Touchpad Support for macOS** to Applications.
+4. Open the app. Use its buttons to grant Input Monitoring and Accessibility, then enable support.
+5. Pair the T1 Plus in Bluetooth settings. Pairing before or after setup is supported.
+
+The helper runs only while support is enabled. The app may also appear under Login Items because
+macOS manages the bundled helper as a background item. Touch input and diagnostics stay on the Mac;
+the app has no telemetry or network service.
+
+To remove support, open the app and use **Remove Support…** before deleting the application.
+That unregisters the helper and removes its settings without changing the touchpad, its firmware, or
+its Bluetooth pairing. macOS privacy grants can be revoked separately in System Settings.
 
 ## Principles
 
@@ -55,9 +76,10 @@ automatically. The app also reports exact-device presence and configures pointer
 scrolling, and gestures through versioned, validated per-user settings. It can export a bounded,
 local diagnostics report and remove the helper registration and settings without touching the
 device. The language decision and release-build evidence are recorded in
-[ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Signed-app permission and
-service lifecycle acceptance and full hardware acceptance remain under development. No public
-release is ready yet.
+[ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Each published release is
+Developer ID-signed, notarized, stapled, and made from an accepted draft artifact without rebuilding
+it. The release checklist includes fresh permission and service lifecycle testing, full hardware
+behavior on macOS, and unchanged-device regression testing on Windows.
 
 ## Independence and trademarks
 

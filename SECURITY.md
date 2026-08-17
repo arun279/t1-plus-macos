@@ -8,8 +8,11 @@ mitigations.
 
 ## Supported versions
 
-No public binary has been released. Security fixes currently target `main`. A supported-version
-table will be published with the first release.
+| Version | Supported |
+| --- | --- |
+| 0.1.x | Yes |
+
+Security fixes target the latest published patch release and `main`.
 
 ## Security boundary
 

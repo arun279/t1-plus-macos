@@ -4,6 +4,8 @@ This project follows Semantic Versioning. This file is the source for public rel
 
 ## Unreleased
 
+## [0.1.0] - 2026-08-17
+
 ### Added
 
 - Native SwiftUI settings app and bundled per-user `SMAppService` helper.
