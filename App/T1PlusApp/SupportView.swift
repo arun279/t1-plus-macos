@@ -9,7 +9,7 @@ struct SupportView: View {
   private var scenePhase
   @State private var diagnosticsDocument = DiagnosticsDocument(text: "")
   @State private var exportingDiagnostics = false
-  @State private var confirmingRemoval = false
+  @State private var confirmingUninstall = false
 
   var body: some View {
     ScrollView {
@@ -21,7 +21,7 @@ struct SupportView: View {
         error
         notice
         touchpadSettings
-        diagnosticsAndRemoval
+        diagnosticsAndUninstall
         privacy
       }
       .padding(24)
@@ -41,18 +41,18 @@ struct SupportView: View {
       model.completeDiagnosticsExport(result)
     }
     .alert(
-      "Remove T1 Plus support?",
-      isPresented: $confirmingRemoval
+      "Prepare T1 Plus for uninstall?",
+      isPresented: $confirmingUninstall
     ) {
-      Button("Remove Support", role: .destructive) {
-        model.removeSupport()
+      Button("Prepare for Uninstall", role: .destructive) {
+        model.prepareForUninstall()
       }
       Button("Cancel", role: .cancel) {}
     } message: {
       Text(
-        "This unregisters the background helper and clears app settings. "
-          + "It does not change the touchpad or its firmware. macOS keeps granted permissions "
-          + "until you remove them in System Settings."
+        "This stops and unregisters the background agent and resets app settings. "
+          + "It does not change the touchpad, remove macOS permissions, or delete the app. "
+          + "Afterward, move the app to Trash."
       )
     }
   }
@@ -266,8 +266,8 @@ private extension SupportView {
     }
   }
 
-  private var diagnosticsAndRemoval: some View {
-    GroupBox("Diagnostics and Removal") {
+  private var diagnosticsAndUninstall: some View {
+    GroupBox("Diagnostics and Uninstall") {
       VStack(alignment: .leading, spacing: 12) {
         Text(
           "Diagnostics include only version, architecture, permission, device, support, "
@@ -283,8 +283,8 @@ private extension SupportView {
             exportingDiagnostics = true
           }
           Spacer()
-          Button("Remove Support…", role: .destructive) {
-            confirmingRemoval = true
+          Button("Prepare for Uninstall…", role: .destructive) {
+            confirmingUninstall = true
           }
         }
       }

@@ -2,7 +2,7 @@ import XCTest
 
 @MainActor
 final class T1PlusAppUITests: XCTestCase {
-  func testEssentialControlsAndRemovalDisclosure() {
+  func testEssentialControlsAndUninstallDisclosure() {
     let app = launchApp()
     defer { app.terminate() }
 
@@ -10,7 +10,7 @@ final class T1PlusAppUITests: XCTestCase {
     assertExists(app.staticTexts["Permissions"])
     assertExists(app.staticTexts["Support"])
     assertExists(app.staticTexts["Touchpad"])
-    assertExists(app.staticTexts["Diagnostics and Removal"])
+    assertExists(app.staticTexts["Diagnostics and Uninstall"])
 
     let enableSupportToggle =
       app.descendants(matching: .any).matching(identifier: "enable-support-toggle").firstMatch
@@ -24,25 +24,28 @@ final class T1PlusAppUITests: XCTestCase {
     assertExists(app.sliders["Scroll speed"])
     assertExists(app.buttons["Save Diagnostics…"])
 
-    let removeSupport = app.buttons["Remove Support…"]
+    let prepareForUninstall = app.buttons["Prepare for Uninstall…"]
     let scrollView = app.scrollViews.firstMatch
-    for _ in 0..<4 where !removeSupport.isHittable {
+    for _ in 0..<4 where !prepareForUninstall.isHittable {
       scrollView.swipeUp()
     }
-    XCTAssertTrue(removeSupport.isHittable, "The Remove Support button is not reachable.")
-    removeSupport.click()
-    let removalAlert = app.sheets.firstMatch
-    assertExists(removalAlert)
-    let cancel = removalAlert.buttons["Cancel"]
+    XCTAssertTrue(
+      prepareForUninstall.isHittable,
+      "The Prepare for Uninstall button is not reachable."
+    )
+    prepareForUninstall.click()
+    let uninstallAlert = app.sheets.firstMatch
+    assertExists(uninstallAlert)
+    let cancel = uninstallAlert.buttons["Cancel"]
     assertExists(cancel)
-    assertExists(removalAlert.buttons["Remove Support"])
-    let removalDisclosure =
-      "This unregisters the background helper and clears app settings. "
-      + "It does not change the touchpad or its firmware. macOS keeps granted permissions "
-      + "until you remove them in System Settings."
+    assertExists(uninstallAlert.buttons["Prepare for Uninstall"])
+    let uninstallDisclosure =
+      "This stops and unregisters the background agent and resets app settings. "
+      + "It does not change the touchpad, remove macOS permissions, or delete the app. "
+      + "Afterward, move the app to Trash."
     assertExists(
-      removalAlert.staticTexts.matching(
-        NSPredicate(format: "value == %@", removalDisclosure)
+      uninstallAlert.staticTexts.matching(
+        NSPredicate(format: "value == %@", uninstallDisclosure)
       ).firstMatch
     )
     cancel.click()

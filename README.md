@@ -27,9 +27,10 @@ The helper runs only while support is enabled. The app may also appear under Log
 macOS manages the bundled helper as a background item. Touch input and diagnostics stay on the Mac;
 the app has no telemetry or network service.
 
-To remove support, open the app and use **Remove Support…** before deleting the application.
-That unregisters the helper and removes its settings without changing the touchpad, its firmware, or
-its Bluetooth pairing. macOS privacy grants can be revoked separately in System Settings.
+To uninstall, open the app and use **Prepare for Uninstall…** before moving the application to
+Trash. That unregisters the helper and resets its settings without changing the touchpad, its
+firmware, or its Bluetooth pairing. macOS privacy grants can be revoked separately in System
+Settings.
 
 ## Principles
 

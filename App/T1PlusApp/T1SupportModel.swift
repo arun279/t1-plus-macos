@@ -198,7 +198,7 @@ final class T1SupportModel: ObservableObject {
     }
   }
 
-  func removeSupport() {
+  func prepareForUninstall() {
     errorMessage = nil
     noticeMessage = nil
     do {
@@ -209,10 +209,10 @@ final class T1SupportModel: ObservableObject {
       settings = T1Settings()
       refresh()
       noticeMessage =
-        "T1 Plus support and settings were removed. macOS permissions remain until you remove "
-        + "them in System Settings. You can now move this app to Trash."
+        "T1 Plus support stopped and app settings reset. Move this app to Trash to finish "
+        + "uninstalling. macOS permissions remain until you remove them in System Settings."
     } catch {
-      errorMessage = "Support could not be removed. \(error.localizedDescription)"
+      errorMessage = "The app could not prepare for uninstall. \(error.localizedDescription)"
       refresh()
     }
   }
