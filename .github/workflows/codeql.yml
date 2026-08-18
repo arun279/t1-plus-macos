@@ -21,6 +21,7 @@ on:
           - release-noopt-singlefile-intel
           - profile-intel
           - profile-package-intel
+          - shared-module-cache-intel
       commit_sha:
         description: Exact commit to benchmark
         required: true
@@ -35,7 +36,7 @@ concurrency:
 jobs:
   swift:
     name: security / codeql
-    runs-on: ${{ (inputs.variant == 'baseline-intel' || inputs.variant == 'release-noopt-singlefile-intel' || inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel') && 'macos-26-intel' || 'macos-26' }}
+    runs-on: ${{ (inputs.variant == 'baseline-intel' || inputs.variant == 'release-noopt-singlefile-intel' || inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel' || inputs.variant == 'shared-module-cache-intel') && 'macos-26-intel' || 'macos-26' }}
     timeout-minutes: 45
     permissions:
       contents: read
@@ -93,8 +94,12 @@ jobs:
               build
           }
 
+          if [[ $CODEQL_VARIANT == shared-module-cache-intel ]]; then
+            export SWIFTPM_MODULECACHE_OVERRIDE="$PWD/.build/CodeQL/ModuleCache.noindex"
+          fi
+
           case "$CODEQL_VARIANT" in
-            standard | baseline-arm | baseline-intel | profile-intel | profile-package-intel)
+            standard | baseline-arm | baseline-intel | profile-intel | profile-package-intel | shared-module-cache-intel)
               build
               ;;
             release-noopt-arm)
