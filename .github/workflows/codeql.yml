@@ -2,6 +2,9 @@ name: CodeQL
 
 on:
   pull_request:
+  merge_group:
+    types:
+      - checks_requested
   push:
     branches:
       - main
@@ -16,9 +19,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scope:
+    name: security / codeql-scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      analyze: ${{ steps.scope.outputs.analyze }}
+    steps:
+      - name: Check out source and history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Determine whether Swift analysis is relevant
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || '' }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha || '' }}
+        run: |
+          if [[ $EVENT_NAME == pull_request || $EVENT_NAME == merge_group ]]; then
+            analyze=$(scripts/codeql-relevance.sh "$BASE_SHA" "$HEAD_SHA")
+          else
+            analyze=true
+          fi
+          printf 'analyze=%s\n' "$analyze" >> "$GITHUB_OUTPUT"
+
   swift:
-    name: security / codeql
-    runs-on: macos-26
+    name: security / codeql-swift
+    needs: scope
+    if: needs.scope.outputs.analyze == 'true'
+    runs-on: macos-26-intel
     timeout-minutes: 45
     permissions:
       contents: read
@@ -52,3 +85,41 @@ jobs:
         uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
           category: /language:swift
+
+  gate:
+    name: security / codeql
+    needs:
+      - scope
+      - swift
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify required analysis completed
+        env:
+          ANALYZE: ${{ needs.scope.outputs.analyze }}
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          SWIFT_RESULT: ${{ needs.swift.result }}
+        run: |
+          if [[ $SCOPE_RESULT != success ]]; then
+            printf 'CodeQL scope classification ended with %s.\n' "$SCOPE_RESULT" >&2
+            exit 1
+          fi
+          case $ANALYZE in
+            true)
+              if [[ $SWIFT_RESULT != success ]]; then
+                printf 'Required Swift analysis ended with %s.\n' "$SWIFT_RESULT" >&2
+                exit 1
+              fi
+              ;;
+            false)
+              if [[ $SWIFT_RESULT != skipped ]]; then
+                printf 'Irrelevant change unexpectedly produced Swift result %s.\n' "$SWIFT_RESULT" >&2
+                exit 1
+              fi
+              ;;
+            *)
+              printf 'CodeQL scope returned invalid value %s.\n' "$ANALYZE" >&2
+              exit 1
+              ;;
+          esac
