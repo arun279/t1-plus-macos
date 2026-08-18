@@ -18,6 +18,7 @@ on:
           - release-noopt-arm
           - release-noopt-singlefile-arm
           - baseline-intel
+          - release-noopt-singlefile-intel
       commit_sha:
         description: Exact commit to benchmark
         required: true
@@ -32,7 +33,7 @@ concurrency:
 jobs:
   swift:
     name: security / codeql
-    runs-on: ${{ inputs.variant == 'baseline-intel' && 'macos-26-intel' || 'macos-26' }}
+    runs-on: ${{ (inputs.variant == 'baseline-intel' || inputs.variant == 'release-noopt-singlefile-intel') && 'macos-26-intel' || 'macos-26' }}
     timeout-minutes: 45
     permissions:
       contents: read
@@ -97,7 +98,7 @@ jobs:
             release-noopt-arm)
               build SWIFT_OPTIMIZATION_LEVEL=-Onone
               ;;
-            release-noopt-singlefile-arm)
+            release-noopt-singlefile-arm | release-noopt-singlefile-intel)
               build SWIFT_OPTIMIZATION_LEVEL=-Onone SWIFT_COMPILATION_MODE=singlefile
               ;;
             *)
