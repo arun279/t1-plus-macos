@@ -15,6 +15,7 @@ mkdir -p "$fixture/bin" "$fixture/scripts" "$fixture/T1Plus.xcodeproj"
 cp \
   scripts/archive-release.sh \
   scripts/release-notes.sh \
+  scripts/verify-release-dmg.sh \
   scripts/verify-release-history.sh \
   scripts/verify-release-metadata.sh \
   "$fixture/scripts/"
@@ -38,6 +39,52 @@ cat > "$fixture/bin/gh" << 'EOF'
 printf '%s\n' "${FAKE_RELEASE_TAGS:-}"
 EOF
 chmod +x "$fixture/bin/gh"
+cat > "$fixture/bin/codesign" << 'EOF'
+#!/usr/bin/env bash
+if [[ $* == *'--entitlements'* ]]; then
+  exit 0
+fi
+if [[ $* != *'--display'* ]]; then
+  exit 0
+fi
+path=${!#}
+case $path in
+  *.dmg) identifier=io.github.arun279.t1plus.disk-image ;;
+  *T1PlusHelper.app) identifier=io.github.arun279.t1plus.helper ;;
+  *) identifier=io.github.arun279.t1plus ;;
+esac
+cat << EOF_SIGNATURE
+Identifier=$identifier
+CodeDirectory v=20500 size=100 flags=0x10000(${FAKE_RUNTIME_FLAG:-runtime}) hashes=1+7 location=embedded
+Authority=Developer ID Application: Test (ABCDEFGHIJ)
+Timestamp=Aug 17, 2026 at 8:00:00 PM
+TeamIdentifier=ABCDEFGHIJ
+EOF_SIGNATURE
+EOF
+cat > "$fixture/bin/hdiutil" << 'EOF'
+#!/usr/bin/env bash
+if [[ ${1:-} == attach ]]; then
+  while (($#)); do
+    if [[ $1 == -mountpoint ]]; then
+      mkdir -p "$2/T1 Plus Touchpad Support for macOS.app/Contents/Library/LoginItems/T1PlusHelper.app"
+      break
+    fi
+    shift
+  done
+fi
+EOF
+for command in rmdir spctl xcrun; do
+  cat > "$fixture/bin/$command" << 'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+done
+cat > "$fixture/scripts/test-dmg-package.sh" << 'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$fixture/bin/codesign" "$fixture/bin/hdiutil" "$fixture/bin/rmdir" \
+  "$fixture/bin/spctl" "$fixture/bin/xcrun" "$fixture/scripts/test-dmg-package.sh"
 
 expect_failure() {
   if "$@" > /dev/null 2>&1; then
@@ -78,5 +125,11 @@ expect_failure env "${release_environment[@]}" FAKE_RELEASE_TAGS=v2.0.0 \
   "$fixture/scripts/verify-release-history.sh" 1.2.3
 expect_failure env "${release_environment[@]}" FAKE_RELEASE_TAGS=v1.2.2 \
   "$fixture/scripts/verify-release-history.sh" 01.2.3
+
+touch "$fixture/candidate.dmg"
+env PATH="$fixture/bin:$PATH" \
+  "$fixture/scripts/verify-release-dmg.sh" "$fixture/candidate.dmg"
+expect_failure env PATH="$fixture/bin:$PATH" FAKE_RUNTIME_FLAG=none \
+  "$fixture/scripts/verify-release-dmg.sh" "$fixture/candidate.dmg"
 
 printf 'Release metadata tests passed.\n'
