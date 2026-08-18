@@ -20,10 +20,10 @@ T1 Plus Touchpad Support requires macOS 13 or later.
 
 3. Open the disk image and drag **T1 Plus Touchpad Support for macOS** to Applications.
 4. Open the app. Use its buttons to grant Input Monitoring and Accessibility. The app relaunches
-   once after Accessibility approval so macOS reports the new permission, then enable support.
+   once after Accessibility approval so macOS reports the new permission, then turn on the touchpad.
 5. Pair the T1 Plus in Bluetooth settings. Pairing before or after setup is supported.
 
-The helper runs only while support is enabled. The app may also appear under Login Items because
+The helper runs only while the touchpad is turned on. The app may also appear under Login Items because
 macOS manages the bundled helper as a background item. Touch input and diagnostics stay on the Mac;
 the app has no telemetry or network service.
 
@@ -73,7 +73,7 @@ The raw report decoder and semantic gesture engine are implemented in Swift and 
 deterministic tests. The helper now connects through shared, read-only IOHID input and translates
 semantic actions through CoreGraphics, with reconnect and output-state cleanup. The native app now
 shows the two required macOS permissions and controls the bundled helper through `SMAppService`.
-The T1 Plus can be paired before or after support is enabled; the helper waits for it and reconnects
+The T1 Plus can be paired before or after the touchpad is turned on; the helper waits for it and reconnects
 automatically. The app also reports exact-device presence and configures pointer speed, tapping,
 scrolling, and gestures through versioned, validated per-user settings. It can export a bounded,
 local diagnostics report and remove the helper registration and settings without touching the

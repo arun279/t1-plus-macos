@@ -8,16 +8,16 @@ final class T1PlusAppUITests: XCTestCase {
 
     assertExists(app.staticTexts["T1 Plus Touchpad Support"])
     assertExists(app.staticTexts["Permissions"])
-    assertExists(app.staticTexts["Support"])
     assertExists(app.staticTexts["Touchpad"])
+    assertExists(app.staticTexts["Settings"])
     assertExists(app.staticTexts["Diagnostics and Uninstall"])
 
-    let enableSupportToggle =
-      app.descendants(matching: .any).matching(identifier: "enable-support-toggle").firstMatch
-    assertExists(enableSupportToggle)
+    let touchpadToggle =
+      app.descendants(matching: .any).matching(identifier: "touchpad-enabled-toggle").firstMatch
+    assertExists(touchpadToggle)
     XCTAssertTrue(
-      enableSupportToggle.elementType == .switch || enableSupportToggle.elementType == .checkBox,
-      "The Enable T1 Plus support control is not exposed as a toggle."
+      touchpadToggle.elementType == .switch || touchpadToggle.elementType == .checkBox,
+      "The touchpad control is not exposed as a toggle."
     )
 
     assertExists(app.sliders["Pointer speed"])

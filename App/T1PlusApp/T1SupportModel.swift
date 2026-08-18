@@ -35,30 +35,30 @@ final class T1SupportModel: ObservableObject {
     refresh()
   }
 
-  var supportEnabled: Bool {
+  var touchpadEnabled: Bool {
     serviceState != .disabled
   }
 
-  var supportOperational: Bool {
+  var touchpadOperational: Bool {
     serviceState == .enabled
   }
 
-  var supportNeedsAttention: Bool {
+  var touchpadNeedsAttention: Bool {
     serviceState == .unavailable || serviceState == .requiresApproval
   }
 
-  var canEnableSupport: Bool {
+  var canEnableTouchpad: Bool {
     inputMonitoringGranted && eventPostingGranted
   }
 
-  var supportStatus: String {
+  var touchpadStatus: String {
     switch serviceState {
     case .disabled:
-      "Disabled"
+      "Off"
     case .checking:
-      "Checking"
+      "Starting"
     case .enabled:
-      "Enabled"
+      "On"
     case .unavailable:
       "Needs attention"
     case .requiresApproval:
@@ -107,13 +107,13 @@ final class T1SupportModel: ObservableObject {
     relaunch()
   }
 
-  func setSupportEnabled(_ enabled: Bool) {
+  func setTouchpadEnabled(_ enabled: Bool) {
     errorMessage = nil
     noticeMessage = nil
     do {
       if enabled {
-        guard canEnableSupport else {
-          errorMessage = "Grant both permissions before enabling support."
+        guard canEnableTouchpad else {
+          errorMessage = "Grant both permissions before turning on the touchpad."
           return
         }
         guard service.status != .enabled else { return }
@@ -125,8 +125,8 @@ final class T1SupportModel: ObservableObject {
     } catch {
       errorMessage =
         enabled
-        ? "Support could not be enabled. \(error.localizedDescription)"
-        : "Support could not be disabled. \(error.localizedDescription)"
+        ? "The touchpad could not be turned on. \(error.localizedDescription)"
+        : "The touchpad could not be turned off. \(error.localizedDescription)"
       refresh()
     }
   }
@@ -184,7 +184,7 @@ final class T1SupportModel: ObservableObject {
       macOS: \(ProcessInfo.processInfo.operatingSystemVersionString)
       Architecture: \(Self.architecture)
       Device: \(connected)
-      Support: \(supportStatus.lowercased())
+      Touchpad: \(touchpadStatus.lowercased())
       Input Monitoring: \(inputMonitoring)
       Accessibility: \(accessibility)
       Backend: CoreGraphics CGEvent
@@ -226,7 +226,7 @@ final class T1SupportModel: ObservableObject {
       settings = T1Settings()
       refresh()
       noticeMessage =
-        "T1 Plus support stopped and app settings reset. Move this app to Trash to finish "
+        "T1 Plus touchpad turned off and app settings reset. Move this app to Trash to finish "
         + "uninstalling. macOS permissions remain until you remove them in System Settings."
     } catch {
       errorMessage = "The app could not prepare for uninstall. \(error.localizedDescription)"
