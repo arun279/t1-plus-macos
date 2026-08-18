@@ -8,17 +8,31 @@ on:
   schedule:
     - cron: "31 8 * * 2"
   workflow_dispatch:
+    inputs:
+      variant:
+        description: CodeQL build variant
+        required: true
+        type: choice
+        options:
+          - baseline-arm
+          - release-noopt-arm
+          - release-noopt-singlefile-arm
+          - baseline-intel
+      commit_sha:
+        description: Exact commit to benchmark
+        required: true
+        type: string
 
 permissions: {}
 
 concurrency:
-  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  group: codeql-${{ github.event.pull_request.number || github.ref }}-${{ inputs.variant || 'standard' }}
   cancel-in-progress: true
 
 jobs:
   swift:
     name: security / codeql
-    runs-on: macos-26
+    runs-on: ${{ inputs.variant == 'baseline-intel' && 'macos-26-intel' || 'macos-26' }}
     timeout-minutes: 45
     permissions:
       contents: read
@@ -28,27 +42,81 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Verify diagnostic commit
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          EXPECTED_COMMIT: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! $EXPECTED_COMMIT =~ ^[0-9a-f]{40}$ ]]; then
+            printf 'Invalid commit SHA: %s\n' "$EXPECTED_COMMIT" >&2
+            exit 64
+          fi
+          actual_commit=$(git rev-parse HEAD)
+          if [[ $actual_commit != "$EXPECTED_COMMIT" ]]; then
+            printf 'Expected %s, checked out %s\n' "$EXPECTED_COMMIT" "$actual_commit" >&2
+            exit 1
+          fi
       - name: Initialize Swift analysis
         uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
           build-mode: manual
+          debug: ${{ github.event_name == 'workflow_dispatch' }}
+          debug-artifact-name: codeql-debug-${{ inputs.variant || 'standard' }}
           languages: swift
       - name: Build analyzed application
-        run: >-
-          xcodebuild
-          -project T1Plus.xcodeproj
-          -scheme T1PlusApp
-          -configuration Release
-          -destination 'generic/platform=macOS'
-          -derivedDataPath .build/CodeQL
-          ARCHS=arm64
-          CODE_SIGNING_ALLOWED=NO
-          CODE_SIGNING_REQUIRED=NO
-          COMPILATION_CACHE_ENABLE_CACHING=NO
-          SWIFT_ENABLE_COMPILE_CACHE=NO
-          SWIFT_USE_INTEGRATED_DRIVER=NO
-          build
+        env:
+          CODEQL_EXTRACTOR_SWIFT_LOG_LEVELS: out:text:debug,*:debug
+          CODEQL_EXTRACTOR_SWIFT_RUN_UNDER: /usr/bin/time -lp
+          CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: T1PlusHelper
+          CODEQL_VARIANT: ${{ inputs.variant || 'standard' }}
+        run: |
+          set -euo pipefail
+
+          build() {
+            xcodebuild \
+              -project T1Plus.xcodeproj \
+              -scheme T1PlusApp \
+              -configuration Release \
+              -destination 'generic/platform=macOS' \
+              -derivedDataPath .build/CodeQL \
+              ARCHS=arm64 \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              COMPILATION_CACHE_ENABLE_CACHING=NO \
+              SWIFT_ENABLE_COMPILE_CACHE=NO \
+              SWIFT_USE_INTEGRATED_DRIVER=NO \
+              "$@" \
+              build
+          }
+
+          case "$CODEQL_VARIANT" in
+            standard | baseline-arm | baseline-intel)
+              build
+              ;;
+            release-noopt-arm)
+              build SWIFT_OPTIMIZATION_LEVEL=-Onone
+              ;;
+            release-noopt-singlefile-arm)
+              build SWIFT_OPTIMIZATION_LEVEL=-Onone SWIFT_COMPILATION_MODE=singlefile
+              ;;
+            *)
+              printf 'Unsupported CodeQL variant: %s\n' "$CODEQL_VARIANT" >&2
+              exit 64
+              ;;
+          esac
       - name: Analyze Swift
         uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
-          category: /language:swift
+          category: /language:swift/${{ inputs.variant || 'standard' }}
+          output: .build/CodeQLResults
+          upload: ${{ github.event_name == 'workflow_dispatch' && 'never' || 'always' }}
+          upload-database: ${{ github.event_name != 'workflow_dispatch' }}
+      - name: Upload diagnostic results
+        if: success() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          if-no-files-found: error
+          name: codeql-results-${{ inputs.variant }}
+          path: .build/CodeQLResults
+          retention-days: 7
