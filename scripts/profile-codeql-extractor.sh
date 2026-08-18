@@ -29,6 +29,10 @@ if [[ $profile == false ]]; then
   exec "$@"
 fi
 
+script_directory=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+profile_directory="${script_directory}/../.build/codeql-profiles"
+/bin/mkdir -p "$profile_directory"
+
 "$@" &
 extractor_pid=$!
 
@@ -69,7 +73,7 @@ for ((attempt = 0; attempt < 100; attempt += 1)); do
   /bin/sleep 0.1
 done
 
-profile_path="${RUNNER_TEMP:?}/codeql-extractor-sample-${extractor_pid}.txt"
+profile_path="${profile_directory}/codeql-extractor-sample-${extractor_pid}.txt"
 
 if [[ -z $profile_pid ]]; then
   set +e

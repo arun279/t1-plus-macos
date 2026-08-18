@@ -123,7 +123,7 @@ jobs:
         with:
           if-no-files-found: error
           name: codeql-extractor-profiles-${{ github.run_id }}
-          path: ${{ runner.temp }}/codeql-extractor-sample-*.txt
+          path: ${{ github.workspace }}/.build/codeql-profiles/codeql-extractor-sample-*.txt
           retention-days: 7
       - name: Analyze Swift
         uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
