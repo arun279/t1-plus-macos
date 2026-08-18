@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		100000000000000000000001 /* T1PlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* T1PlusApp.swift */; };
 		100000000000000000000002 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* main.swift */; };
-		100000000000000000000003 /* T1PlusHelper.app in Embed Login Items */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* T1PlusHelper.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		100000000000000000000003 /* T1PlusHelper in Embed Helper Tool */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* T1PlusHelper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		100000000000000000000004 /* T1Protocol in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000002 /* T1Protocol */; };
 		100000000000000000000005 /* T1Gestures in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000003 /* T1Gestures */; };
 		100000000000000000000006 /* T1Protocol in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000004 /* T1Protocol */; };
@@ -24,6 +24,7 @@
 		10000000000000000000000F /* T1Settings in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000007 /* T1Settings */; };
 		100000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* Assets.xcassets */; };
 		100000000000000000000011 /* T1PlusAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* T1PlusAppUITests.swift */; };
+		100000000000000000000012 /* io.github.arun279.t1plus.helper.plist in Embed Launch Agent */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* io.github.arun279.t1plus.helper.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,15 +45,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		400000000000000000000001 /* Embed Login Items */ = {
+		400000000000000000000001 /* Embed Helper Tool */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = Contents/Library/LoginItems;
+			dstPath = Contents/MacOS;
 			dstSubfolderSpec = 1;
 			files = (
-				100000000000000000000003 /* T1PlusHelper.app in Embed Login Items */,
+				100000000000000000000003 /* T1PlusHelper in Embed Helper Tool */,
 			);
-			name = "Embed Login Items";
+			name = "Embed Helper Tool";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		400000000000000000000002 /* Embed Launch Agent */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LaunchAgents;
+			dstSubfolderSpec = 1;
+			files = (
+				100000000000000000000012 /* io.github.arun279.t1plus.helper.plist in Embed Launch Agent */,
+			);
+			name = "Embed Launch Agent";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -61,9 +73,9 @@
 		200000000000000000000001 /* T1PlusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1PlusApp.swift; sourceTree = "<group>"; };
 		200000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		200000000000000000000003 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		200000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		200000000000000000000004 /* io.github.arun279.t1plus.helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = io.github.arun279.t1plus.helper.plist; sourceTree = "<group>"; };
 		200000000000000000000005 /* T1 Plus Touchpad Support for macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "T1 Plus Touchpad Support for macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		200000000000000000000006 /* T1PlusHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = T1PlusHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000006 /* T1PlusHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = T1PlusHelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		200000000000000000000007 /* T1HelperRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HelperRuntime.swift; sourceTree = "<group>"; };
 		200000000000000000000008 /* T1HIDInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HIDInput.swift; sourceTree = "<group>"; };
 		200000000000000000000009 /* CGEventOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGEventOutput.swift; sourceTree = "<group>"; };
@@ -136,7 +148,7 @@
 				200000000000000000000008 /* T1HIDInput.swift */,
 				200000000000000000000009 /* CGEventOutput.swift */,
 				20000000000000000000000A /* WorkspaceLifecycleMonitor.swift */,
-				200000000000000000000004 /* Info.plist */,
+				200000000000000000000004 /* io.github.arun279.t1plus.helper.plist */,
 			);
 			path = Helper/T1PlusHelper;
 			sourceTree = SOURCE_ROOT;
@@ -145,7 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				200000000000000000000005 /* T1 Plus Touchpad Support for macOS.app */,
-				200000000000000000000006 /* T1PlusHelper.app */,
+				200000000000000000000006 /* T1PlusHelper */,
 				20000000000000000000000F /* T1PlusAppUITests.xctest */,
 			);
 			name = Products;
@@ -169,7 +181,8 @@
 				700000000000000000000001 /* Sources */,
 				500000000000000000000001 /* Frameworks */,
 				700000000000000000000003 /* Resources */,
-				400000000000000000000001 /* Embed Login Items */,
+				400000000000000000000001 /* Embed Helper Tool */,
+				400000000000000000000002 /* Embed Launch Agent */,
 			);
 			buildRules = (
 			);
@@ -192,7 +205,6 @@
 			buildPhases = (
 				700000000000000000000002 /* Sources */,
 				500000000000000000000002 /* Frameworks */,
-				700000000000000000000004 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -205,8 +217,8 @@
 				D00000000000000000000007 /* T1Settings */,
 			);
 			productName = T1PlusHelper;
-			productReference = 200000000000000000000006 /* T1PlusHelper.app */;
-			productType = "com.apple.product-type.application";
+			productReference = 200000000000000000000006 /* T1PlusHelper */;
+			productType = "com.apple.product-type.tool";
 		};
 		800000000000000000000003 /* T1PlusAppUITests */ = {
 			isa = PBXNativeTarget;
@@ -279,13 +291,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000010 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		700000000000000000000004 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,12 +514,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Helper/T1PlusHelper/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
+				OTHER_CODE_SIGN_FLAGS = "$(inherited) -i $(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.arun279.t1plus.helper;
 				PRODUCT_NAME = T1PlusHelper;
 				SKIP_INSTALL = YES;
@@ -528,12 +533,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Helper/T1PlusHelper/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
+				OTHER_CODE_SIGN_FLAGS = "$(inherited) -i $(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.arun279.t1plus.helper;
 				PRODUCT_NAME = T1PlusHelper;
 				SKIP_INSTALL = YES;

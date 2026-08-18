@@ -37,7 +37,6 @@ xcodebuild \
   CODE_SIGN_STYLE=Manual \
   CODE_SIGN_IDENTITY="$CODESIGN_IDENTITY" \
   DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-  OTHER_CODE_SIGN_FLAGS=--timestamp \
   archive
 
 xcodebuild \

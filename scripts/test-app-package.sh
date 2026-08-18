@@ -13,8 +13,8 @@ if [[ -z $app_path ]]; then
 fi
 
 info_plist="$app_path/Contents/Info.plist"
-helper_path="$app_path/Contents/Library/LoginItems/T1PlusHelper.app"
-helper_executable="$helper_path/Contents/MacOS/T1PlusHelper"
+helper_executable="$app_path/Contents/MacOS/T1PlusHelper"
+agent_plist="$app_path/Contents/Library/LaunchAgents/io.github.arun279.t1plus.helper.plist"
 app_executable="$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS"
 icon_assets=App/T1PlusApp/Assets.xcassets/AppIcon.appiconset
 
@@ -25,12 +25,13 @@ icon_assets=App/T1PlusApp/Assets.xcassets/AppIcon.appiconset
 [[ -x $app_executable ]]
 [[ -f $app_path/Contents/Resources/Assets.car ]]
 [[ -f $app_path/Contents/Resources/AppIcon.icns ]]
-[[ -d $helper_path ]]
-[[ $(plutil -extract CFBundleIdentifier raw "$helper_path/Contents/Info.plist") == io.github.arun279.t1plus.helper ]]
-[[ $(plutil -extract LSBackgroundOnly raw "$helper_path/Contents/Info.plist") == true ]]
-[[ $(plutil -extract LSApplicationCategoryType raw "$helper_path/Contents/Info.plist") == public.app-category.utilities ]]
-[[ $(plutil -extract NSInputMonitoringUsageDescription raw "$helper_path/Contents/Info.plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ -x $helper_executable ]]
+[[ -f $agent_plist ]]
+[[ ! -e $app_path/Contents/Library/LoginItems ]]
+[[ $(plutil -extract Label raw "$agent_plist") == io.github.arun279.t1plus.helper ]]
+[[ $(plutil -extract BundleProgram raw "$agent_plist") == Contents/MacOS/T1PlusHelper ]]
+[[ $(plutil -extract KeepAlive.SuccessfulExit raw "$agent_plist") == false ]]
+[[ $(plutil -extract RunAtLoad raw "$agent_plist") == true ]]
 
 [[ $(find "$icon_assets" -type f -name '*.png' | wc -l | tr -d ' ') == 10 ]]
 icon_names=(
@@ -59,17 +60,15 @@ for icon_index in "${!icon_names[@]}"; do
   fi
 done
 
-for plist in "$info_plist" "$helper_path/Contents/Info.plist"; do
-  while IFS= read -r usage_key; do
-    if [[ $usage_key != NSInputMonitoringUsageDescription ]]; then
-      printf 'error: app bundle declares permission outside its budget: %s\n' "$usage_key" >&2
-      exit 1
-    fi
-  done < <(
-    plutil -convert xml1 -o - "$plist" |
-      sed -n 's:.*<key>\(NS[^<]*UsageDescription\)</key>.*:\1:p'
-  )
-done
+while IFS= read -r usage_key; do
+  if [[ $usage_key != NSInputMonitoringUsageDescription ]]; then
+    printf 'error: app bundle declares permission outside its budget: %s\n' "$usage_key" >&2
+    exit 1
+  fi
+done < <(
+  plutil -convert xml1 -o - "$info_plist" |
+    sed -n 's:.*<key>\(NS[^<]*UsageDescription\)</key>.*:\1:p'
+)
 
 app_architectures=$(lipo -archs "$app_executable")
 helper_architectures=$(lipo -archs "$helper_executable")

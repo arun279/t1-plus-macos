@@ -19,16 +19,18 @@ T1 Plus Touchpad Support requires macOS 13 or later.
    ```
 
 3. Open the disk image and drag **T1 Plus Touchpad Support for macOS** to Applications.
-4. Open the app. Use its buttons to grant Input Monitoring and Accessibility, then enable support.
+4. Open the app. Use its buttons to grant Input Monitoring and Accessibility. The app relaunches
+   once after Accessibility approval so macOS reports the new permission, then enable support.
 5. Pair the T1 Plus in Bluetooth settings. Pairing before or after setup is supported.
 
 The helper runs only while support is enabled. The app may also appear under Login Items because
 macOS manages the bundled helper as a background item. Touch input and diagnostics stay on the Mac;
 the app has no telemetry or network service.
 
-To remove support, open the app and use **Remove Support…** before deleting the application.
-That unregisters the helper and removes its settings without changing the touchpad, its firmware, or
-its Bluetooth pairing. macOS privacy grants can be revoked separately in System Settings.
+To uninstall, open the app and use **Prepare for Uninstall…** before moving the application to
+Trash. That unregisters the helper and resets its settings without changing the touchpad, its
+firmware, or its Bluetooth pairing. macOS privacy grants can be revoked separately in System
+Settings.
 
 ## Principles
 

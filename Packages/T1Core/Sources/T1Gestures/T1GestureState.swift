@@ -25,6 +25,7 @@ struct Interaction: Sendable {
   var maxCentroidDistance = 0.0
   var maxRadiusChange = 0.0
   var pinchStepsEmitted = 0
+  var lastPinchEmissionAt: UInt64?
   var samples = 0
   var scrollAxis = ScrollAxis.free
   var scrollStarted = false
@@ -55,7 +56,11 @@ enum Threshold {
   static let tapMaxDistance = 30.0
   static let twoFingerTapMaxDistance = 36.0
   static let scrollStartDistance = 9.0
-  static let pinchStartDistance = 18.0
+  static let pinchStartDistance = 40.0
+  static let pinchDominanceRatio = 1.80
+  static let pinchStepDistance = 160.0
+  static let pinchStepHysteresis = 0.80
+  static let pinchEmissionIntervalNanoseconds: UInt64 = 80_000_000
   static let twoFingerCommitSeconds = 0.12
   static let tapDragStartDistance = 14.0
   static let tapDragCommitSeconds = 0.55

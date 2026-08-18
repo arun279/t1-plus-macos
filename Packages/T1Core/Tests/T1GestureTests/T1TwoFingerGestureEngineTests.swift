@@ -57,7 +57,7 @@ final class T1TwoFingerGestureEngineTests: XCTestCase {
     processPinchTrace(engine: &engine, sink: &sink, start: start, expanding: true)
     engine.process(gestureFrame([]), at: start + 180_000_000, into: &sink)
 
-    XCTAssertGreaterThanOrEqual(sink.actions.filter { $0 == .shortcut(.zoomIn) }.count, 2)
+    XCTAssertEqual(sink.actions.filter { $0 == .shortcut(.zoomIn) }.count, 1)
     XCTAssertTrue(scrollPhases(in: sink.actions).isEmpty)
   }
 
@@ -69,7 +69,7 @@ final class T1TwoFingerGestureEngineTests: XCTestCase {
     processPinchTrace(engine: &engine, sink: &sink, start: start, expanding: false)
     engine.process(gestureFrame([]), at: start + 180_000_000, into: &sink)
 
-    XCTAssertGreaterThanOrEqual(sink.actions.filter { $0 == .shortcut(.zoomOut) }.count, 2)
+    XCTAssertEqual(sink.actions.filter { $0 == .shortcut(.zoomOut) }.count, 1)
     XCTAssertTrue(scrollPhases(in: sink.actions).isEmpty)
   }
 
@@ -84,6 +84,60 @@ final class T1TwoFingerGestureEngineTests: XCTestCase {
     engine.process(gestureFrame([]), at: start + 180_000_000, into: &sink)
 
     XCTAssertTrue(sink.actions.isEmpty)
+  }
+
+  func testSlowHorizontalTranslationDoesNotBecomePinch() {
+    var engine = T1GestureEngine()
+    var sink = ActionCollector()
+    let start: UInt64 = 1_000_000_000
+    let frames = [
+      gestureFrame([(0, 400, 300), (1, 800, 300)]),
+      gestureFrame([(0, 412, 300), (1, 836, 300)]),
+      gestureFrame([(0, 500, 300), (1, 930, 300)]),
+      gestureFrame([(0, 560, 300), (1, 990, 300)]),
+    ]
+    let offsets: [UInt64] = [0, 180_000_000, 220_000_000, 260_000_000]
+
+    for (frame, offset) in zip(frames, offsets) {
+      engine.process(frame, at: start + offset, into: &sink)
+    }
+    engine.process(gestureFrame([]), at: start + 300_000_000, into: &sink)
+
+    XCTAssertFalse(
+      sink.actions.contains { action in
+        if case .shortcut(.zoomIn) = action { return true }
+        if case .shortcut(.zoomOut) = action { return true }
+        return false
+      })
+    XCTAssertEqual(scrollPhases(in: sink.actions), [.began, .changed, .ended])
+  }
+
+  func testPinchOutputIsRateLimited() {
+    var engine = T1GestureEngine()
+    var sink = ActionCollector()
+    let start: UInt64 = 1_000_000_000
+    let frames = [
+      gestureFrame([(0, 600, 400), (1, 1_000, 400)]),
+      gestureFrame([(0, 500, 400), (1, 1_100, 400)]),
+      gestureFrame([(0, 400, 400), (1, 1_200, 400)]),
+      gestureFrame([(0, 300, 400), (1, 1_300, 400)]),
+      gestureFrame([(0, 200, 400), (1, 1_400, 400)]),
+      gestureFrame([(0, 200, 400), (1, 1_400, 400)]),
+    ]
+    let offsets: [UInt64] = [
+      0,
+      130_000_000,
+      140_000_000,
+      150_000_000,
+      160_000_000,
+      210_000_000,
+    ]
+
+    for (frame, offset) in zip(frames, offsets) {
+      engine.process(frame, at: start + offset, into: &sink)
+    }
+
+    XCTAssertEqual(sink.actions.filter { $0 == .shortcut(.zoomIn) }.count, 2)
   }
 
   func testInvertScrollReversesOutputDeltas() {

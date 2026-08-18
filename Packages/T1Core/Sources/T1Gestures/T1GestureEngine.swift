@@ -113,8 +113,9 @@ public struct T1GestureEngine: Sendable {
       emitPointer(deltaX: deltaX, deltaY: deltaY, sink: &sink)
     } else if interaction.mode == .twoPending {
       let isPinch =
-        abs(radiusChange) >= Threshold.pinchStartDistance
-        && abs(radiusChange) > fromStart * 0.80
+        configuration.gesturesEnabled
+        && abs(radiusChange) >= Threshold.pinchStartDistance
+        && abs(radiusChange) > fromStart * Threshold.pinchDominanceRatio
       let isScroll =
         fromStart >= Threshold.scrollStartDistance * 1.7
         && fromStart > abs(radiusChange) * 1.15
@@ -151,14 +152,28 @@ public struct T1GestureEngine: Sendable {
       }
       emitScroll(deltaX: scrollX, deltaY: scrollY, sink: &sink)
     } else if shouldEmitPinch {
-      let stepPosition = radiusChange / 68.0
-      while stepPosition >= Double(interaction.pinchStepsEmitted) + 0.80 {
+      let stepPosition = radiusChange / Threshold.pinchStepDistance
+      let mayEmit =
+        interaction.lastPinchEmissionAt.map {
+          timestampNanoseconds >= $0
+            && timestampNanoseconds - $0 >= Threshold.pinchEmissionIntervalNanoseconds
+        } ?? true
+      let shouldZoomIn =
+        mayEmit
+        && stepPosition
+          >= Double(interaction.pinchStepsEmitted) + Threshold.pinchStepHysteresis
+      let shouldZoomOut =
+        mayEmit
+        && stepPosition
+          <= Double(interaction.pinchStepsEmitted) - Threshold.pinchStepHysteresis
+      if shouldZoomIn {
         sink.record(.shortcut(.zoomIn))
         interaction.pinchStepsEmitted += 1
-      }
-      while stepPosition <= Double(interaction.pinchStepsEmitted) - 0.80 {
+        interaction.lastPinchEmissionAt = timestampNanoseconds
+      } else if shouldZoomOut {
         sink.record(.shortcut(.zoomOut))
         interaction.pinchStepsEmitted -= 1
+        interaction.lastPinchEmissionAt = timestampNanoseconds
       }
     }
 

@@ -30,3 +30,5 @@ This project follows Semantic Versioning. This file is the source for public rel
   input before the user session becomes active.
 - Start suspended when the helper launches into an already inactive user session.
 - Enforce an allowlist containing only the required Input Monitoring privacy description.
+- Prevent two-finger translation from being misclassified as pinch and rate-limit synthesized zoom
+  shortcuts.

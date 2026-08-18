@@ -23,6 +23,13 @@ cp \
 printf '1.2.3\n' > "$fixture/VERSION"
 sed 's/MARKETING_VERSION = [^;]*/MARKETING_VERSION = 1.2.3/' \
   T1Plus.xcodeproj/project.pbxproj > "$fixture/T1Plus.xcodeproj/project.pbxproj"
+# This is an exact Xcode project-file literal, not a shell expression.
+# shellcheck disable=SC2016
+helper_identifier_setting='OTHER_CODE_SIGN_FLAGS = "$(inherited) -i $(PRODUCT_BUNDLE_IDENTIFIER)";'
+if [[ $(grep -Fc "$helper_identifier_setting" T1Plus.xcodeproj/project.pbxproj) != 2 ]]; then
+  printf 'error: helper code-signing identifier is not pinned in both configurations\n' >&2
+  exit 1
+fi
 cat > "$fixture/CHANGELOG.md" << 'EOF'
 # Changelog
 
@@ -51,7 +58,7 @@ fi
 path=${!#}
 case $path in
   *.dmg) identifier=io.github.arun279.t1plus.disk-image ;;
-  *T1PlusHelper.app) identifier=io.github.arun279.t1plus.helper ;;
+  *T1PlusHelper) identifier=io.github.arun279.t1plus.helper ;;
   *) identifier=io.github.arun279.t1plus ;;
 esac
 cat << EOF_SIGNATURE
@@ -67,7 +74,8 @@ cat > "$fixture/bin/hdiutil" << 'EOF'
 if [[ ${1:-} == attach ]]; then
   while (($#)); do
     if [[ $1 == -mountpoint ]]; then
-      mkdir -p "$2/T1 Plus Touchpad Support for macOS.app/Contents/Library/LoginItems/T1PlusHelper.app"
+      mkdir -p "$2/T1 Plus Touchpad Support for macOS.app/Contents/MacOS"
+      touch "$2/T1 Plus Touchpad Support for macOS.app/Contents/MacOS/T1PlusHelper"
       break
     fi
     shift
