@@ -12,6 +12,7 @@ swift format format \
   --recursive \
   App \
   Helper \
+  Shared \
   Packages/T1Core/Package.swift \
   Packages/T1Core/Sources \
   Packages/T1Core/Tests

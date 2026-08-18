@@ -25,6 +25,11 @@
 		100000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* Assets.xcassets */; };
 		100000000000000000000011 /* T1PlusAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* T1PlusAppUITests.swift */; };
 		100000000000000000000012 /* io.github.arun279.t1plus.helper.plist in Embed Launch Agent */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* io.github.arun279.t1plus.helper.plist */; };
+		100000000000000000000013 /* T1HelperStatusProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000010 /* T1HelperStatusProtocol.swift */; };
+		100000000000000000000014 /* T1HelperStatusProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000010 /* T1HelperStatusProtocol.swift */; };
+		100000000000000000000015 /* T1HelperStatusProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000011 /* T1HelperStatusProbe.swift */; };
+		100000000000000000000016 /* T1HelperStatusServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000012 /* T1HelperStatusServer.swift */; };
+		100000000000000000000017 /* DiagnosticsDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000013 /* DiagnosticsDocument.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +90,10 @@
 		20000000000000000000000D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		20000000000000000000000E /* T1PlusAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1PlusAppUITests.swift; sourceTree = "<group>"; };
 		20000000000000000000000F /* T1PlusAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = T1PlusAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000010 /* T1HelperStatusProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HelperStatusProtocol.swift; sourceTree = "<group>"; };
+		200000000000000000000011 /* T1HelperStatusProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HelperStatusProbe.swift; sourceTree = "<group>"; };
+		200000000000000000000012 /* T1HelperStatusServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HelperStatusServer.swift; sourceTree = "<group>"; };
+		200000000000000000000013 /* DiagnosticsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsDocument.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +133,7 @@
 				600000000000000000000002 /* App */,
 				600000000000000000000005 /* App UI Tests */,
 				600000000000000000000003 /* Helper */,
+				600000000000000000000006 /* Shared */,
 				600000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -132,6 +142,8 @@
 			isa = PBXGroup;
 			children = (
 				200000000000000000000001 /* T1PlusApp.swift */,
+				200000000000000000000013 /* DiagnosticsDocument.swift */,
+				200000000000000000000011 /* T1HelperStatusProbe.swift */,
 				20000000000000000000000B /* T1SupportModel.swift */,
 				20000000000000000000000C /* SupportView.swift */,
 				20000000000000000000000D /* Assets.xcassets */,
@@ -145,6 +157,7 @@
 			children = (
 				200000000000000000000003 /* main.swift */,
 				200000000000000000000007 /* T1HelperRuntime.swift */,
+				200000000000000000000012 /* T1HelperStatusServer.swift */,
 				200000000000000000000008 /* T1HIDInput.swift */,
 				200000000000000000000009 /* CGEventOutput.swift */,
 				20000000000000000000000A /* WorkspaceLifecycleMonitor.swift */,
@@ -169,6 +182,14 @@
 				20000000000000000000000E /* T1PlusAppUITests.swift */,
 			);
 			path = App/T1PlusAppUITests;
+			sourceTree = SOURCE_ROOT;
+		};
+		600000000000000000000006 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000010 /* T1HelperStatusProtocol.swift */,
+			);
+			path = Shared;
 			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
@@ -302,6 +323,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000001 /* T1PlusApp.swift in Sources */,
+				100000000000000000000017 /* DiagnosticsDocument.swift in Sources */,
+				100000000000000000000013 /* T1HelperStatusProtocol.swift in Sources */,
+				100000000000000000000015 /* T1HelperStatusProbe.swift in Sources */,
 				10000000000000000000000C /* T1SupportModel.swift in Sources */,
 				10000000000000000000000D /* SupportView.swift in Sources */,
 			);
@@ -312,7 +336,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000002 /* main.swift in Sources */,
+				100000000000000000000014 /* T1HelperStatusProtocol.swift in Sources */,
 				100000000000000000000008 /* T1HelperRuntime.swift in Sources */,
+				100000000000000000000016 /* T1HelperStatusServer.swift in Sources */,
 				100000000000000000000009 /* T1HIDInput.swift in Sources */,
 				10000000000000000000000A /* CGEventOutput.swift in Sources */,
 				10000000000000000000000B /* WorkspaceLifecycleMonitor.swift in Sources */,

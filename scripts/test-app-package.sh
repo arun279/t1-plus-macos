@@ -31,6 +31,7 @@ icon_assets=App/T1PlusApp/Assets.xcassets/AppIcon.appiconset
 [[ $(plutil -extract Label raw "$agent_plist") == io.github.arun279.t1plus.helper ]]
 [[ $(plutil -extract BundleProgram raw "$agent_plist") == Contents/MacOS/T1PlusHelper ]]
 [[ $(plutil -extract KeepAlive.SuccessfulExit raw "$agent_plist") == false ]]
+[[ $(/usr/libexec/PlistBuddy -c 'Print :MachServices:io.github.arun279.t1plus.helper.status' "$agent_plist") == true ]]
 [[ $(plutil -extract RunAtLoad raw "$agent_plist") == true ]]
 
 [[ $(find "$icon_assets" -type f -name '*.png' | wc -l | tr -d ' ') == 10 ]]
@@ -91,12 +92,18 @@ for required_symbol in \
   _CGRequestPostEventAccess \
   _IOHIDCheckAccess \
   _IOHIDRequestAccess \
+  "OBJC_CLASS_\$_NSXPCConnection" \
   "OBJC_CLASS_\$_SMAppService"; do
   if [[ $app_symbols != *$required_symbol* ]]; then
     printf 'error: app does not link required lifecycle API: %s\n' "$required_symbol" >&2
     exit 1
   fi
 done
+
+if [[ $undefined_symbols != *"OBJC_CLASS_\$_NSXPCListener"* ]]; then
+  printf 'error: helper does not link the required health service API\n' >&2
+  exit 1
+fi
 
 combined_symbols="$app_symbols
 $undefined_symbols"

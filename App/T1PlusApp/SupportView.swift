@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import T1Settings
-import UniformTypeIdentifiers
 
 struct SupportView: View {
   @ObservedObject var model: T1SupportModel
@@ -70,8 +69,9 @@ private extension SupportView {
         Divider()
         StatusValue(
           title: "Support \(model.supportStatus.lowercased())",
-          systemImage: model.supportEnabled ? "checkmark.circle.fill" : "circle",
-          active: model.supportEnabled
+          systemImage: supportStatusImage,
+          active: model.supportOperational,
+          warning: model.supportNeedsAttention
         )
         Spacer()
         Button("Refresh") {
@@ -161,6 +161,15 @@ private extension SupportView {
           }
         }
 
+        if model.serviceState == .unavailable {
+          Text(
+            "The background helper is registered but did not respond. "
+              + "Turn support off and on. If it still does not start, save diagnostics."
+          )
+          .font(.callout)
+          .foregroundStyle(.orange)
+        }
+
         Text(
           "The T1 Plus can be paired before or after support is enabled. "
             + "The helper waits for it and reconnects automatically."
@@ -170,6 +179,19 @@ private extension SupportView {
       }
       .padding(.horizontal, 4)
       .padding(.vertical, 6)
+    }
+  }
+
+  private var supportStatusImage: String {
+    switch model.serviceState {
+    case .enabled:
+      "checkmark.circle.fill"
+    case .checking:
+      "clock"
+    case .unavailable, .requiresApproval:
+      "exclamationmark.triangle.fill"
+    case .disabled:
+      "circle"
     }
   }
 
@@ -303,38 +325,15 @@ private extension SupportView {
   }
 }
 
-private struct DiagnosticsDocument: FileDocument {
-  static let readableContentTypes: [UTType] = [.plainText]
-
-  let text: String
-
-  init(text: String) {
-    self.text = text
-  }
-
-  init(configuration: ReadConfiguration) throws {
-    guard
-      let data = configuration.file.regularFileContents,
-      let text = String(data: data, encoding: .utf8)
-    else {
-      throw CocoaError(.fileReadCorruptFile)
-    }
-    self.text = text
-  }
-
-  func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
-    FileWrapper(regularFileWithContents: Data(text.utf8))
-  }
-}
-
 private struct StatusValue: View {
   let title: String
   let systemImage: String
   let active: Bool
+  var warning = false
 
   var body: some View {
     Label(title, systemImage: systemImage)
-      .foregroundStyle(active ? .green : .secondary)
+      .foregroundStyle(warning ? .orange : active ? .green : .secondary)
   }
 }
 
