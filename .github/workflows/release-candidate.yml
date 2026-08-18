@@ -20,7 +20,7 @@ jobs:
     name: release / signed-candidate
     if: github.ref == 'refs/heads/main'
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 90
     environment: release-signing
     permissions:
       attestations: write # Required to attest the signed candidate.
@@ -128,6 +128,7 @@ jobs:
             --key-id "$NOTARY_KEY_ID" \
             --issuer "$NOTARY_ISSUER_ID" \
             --wait \
+            --timeout 75m \
             --output-format json > "$notary_result"
           submission_id=$(jq -er '.id' "$notary_result")
           [[ $(jq -er '.status' "$notary_result") == Accepted ]]
