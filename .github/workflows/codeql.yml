@@ -70,7 +70,7 @@ jobs:
         env:
           CODEQL_EXTRACTOR_SWIFT_LOG_LEVELS: out:text:debug,*:debug
           CODEQL_EXTRACTOR_SWIFT_RUN_UNDER: ${{ inputs.variant == 'profile-intel' && format('{0}/scripts/profile-codeql-extractor.sh', github.workspace) || '/usr/bin/time -lp' }}
-          CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: ${{ inputs.variant == 'profile-intel' && 'Package.swift\|T1PlusHelper' || 'T1PlusHelper' }}
+          CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: ${{ inputs.variant == 'profile-intel' && 'T1' || 'T1PlusHelper' }}
           CODEQL_VARIANT: ${{ inputs.variant || 'standard' }}
         run: |
           set -euo pipefail

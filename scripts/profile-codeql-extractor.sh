@@ -7,6 +7,20 @@ if (($# == 0)); then
   exit 64
 fi
 
+profile=false
+for argument in "$@"; do
+  case "$argument" in
+    *Package.swift* | *T1PlusHelper*)
+      profile=true
+      break
+      ;;
+  esac
+done
+
+if [[ $profile == false ]]; then
+  exec "$@"
+fi
+
 "$@" &
 extractor_pid=$!
 profile_path="${RUNNER_TEMP:?}/codeql-extractor-sample-${extractor_pid}.txt"
