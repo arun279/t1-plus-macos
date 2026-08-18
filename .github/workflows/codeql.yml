@@ -38,6 +38,13 @@ jobs:
     name: security / codeql
     runs-on: ${{ (inputs.variant == 'baseline-intel' || inputs.variant == 'release-noopt-singlefile-intel' || inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel' || inputs.variant == 'shared-module-cache-intel') && 'macos-26-intel' || 'macos-26' }}
     timeout-minutes: 45
+    env:
+      # Package-manifest extraction can begin in an Xcode subprocess that does not
+      # inherit variables scoped only to the build step. Define diagnostic controls
+      # before CodeQL initialization so the manifest extractor can see them.
+      CODEQL_EXTRACTOR_SWIFT_LOG_LEVELS: out:text:debug,*:debug
+      CODEQL_EXTRACTOR_SWIFT_RUN_UNDER: ${{ (inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel') && format('{0}/scripts/profile-codeql-extractor.sh', github.workspace) || '/usr/bin/time -lp' }}
+      CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: ${{ inputs.variant == 'profile-package-intel' && 'Package.swift' || inputs.variant == 'profile-intel' && 'T1' || 'T1PlusHelper' }}
     permissions:
       contents: read
       security-events: write # Required to upload CodeQL results.
@@ -70,9 +77,6 @@ jobs:
           languages: swift
       - name: Build analyzed application
         env:
-          CODEQL_EXTRACTOR_SWIFT_LOG_LEVELS: out:text:debug,*:debug
-          CODEQL_EXTRACTOR_SWIFT_RUN_UNDER: ${{ (inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel') && format('{0}/scripts/profile-codeql-extractor.sh', github.workspace) || '/usr/bin/time -lp' }}
-          CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: ${{ inputs.variant == 'profile-package-intel' && 'Package.swift' || inputs.variant == 'profile-intel' && 'T1' || 'T1PlusHelper' }}
           CODEQL_VARIANT: ${{ inputs.variant || 'standard' }}
         run: |
           set -euo pipefail

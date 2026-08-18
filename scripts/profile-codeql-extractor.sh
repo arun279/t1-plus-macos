@@ -8,9 +8,17 @@ if (($# == 0)); then
 fi
 
 profile=false
+sample_duration=60
+sample_interval=5
 for argument in "$@"; do
   case "$argument" in
-    *Package.swift* | *T1PlusHelper*)
+    *Package.swift*)
+      profile=true
+      sample_duration=600
+      sample_interval=10
+      break
+      ;;
+    *T1PlusHelper*)
       profile=true
       break
       ;;
@@ -80,10 +88,17 @@ if [[ -z $profile_pid ]]; then
   exit 70
 fi
 
-printf 'Sampling extractor.real PID %d (wrapper PID %d).\n' "$profile_pid" "$extractor_pid"
+printf 'Sampling extractor.real PID %d (wrapper PID %d) for up to %d seconds.\n' \
+  "$profile_pid" "$extractor_pid" "$sample_duration"
 
 set +e
-/usr/bin/sample "$profile_pid" 60 5 -mayDie -fullPaths -file "$profile_path"
+/usr/bin/sample \
+  "$profile_pid" \
+  "$sample_duration" \
+  "$sample_interval" \
+  -mayDie \
+  -fullPaths \
+  -file "$profile_path"
 profile_status=$?
 wait "$extractor_pid"
 extractor_status=$?
