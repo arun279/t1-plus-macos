@@ -60,13 +60,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: v${{ inputs.version }}
-        run: |
-          gh release delete "$RELEASE_TAG" --cleanup-tag --yes
-          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
-            printf 'error: rejected draft still exists: %s\n' "$RELEASE_TAG" >&2
-            exit 1
-          fi
-          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" > /dev/null 2>&1; then
-            printf 'error: rejected candidate tag still exists: %s\n' "$RELEASE_TAG" >&2
-            exit 1
-          fi
+        run: scripts/delete-release-candidate.sh "$RELEASE_TAG"

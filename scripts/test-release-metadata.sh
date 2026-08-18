@@ -14,6 +14,7 @@ trap cleanup EXIT
 mkdir -p "$fixture/bin" "$fixture/scripts" "$fixture/T1Plus.xcodeproj"
 cp \
   scripts/archive-release.sh \
+  scripts/delete-release-candidate.sh \
   scripts/release-notes.sh \
   scripts/verify-release-dmg.sh \
   scripts/verify-release-history.sh \
@@ -131,5 +132,54 @@ env PATH="$fixture/bin:$PATH" \
   "$fixture/scripts/verify-release-dmg.sh" "$fixture/candidate.dmg"
 expect_failure env PATH="$fixture/bin:$PATH" FAKE_RUNTIME_FLAG=none \
   "$fixture/scripts/verify-release-dmg.sh" "$fixture/candidate.dmg"
+
+cat > "$fixture/bin/gh" << 'EOF'
+#!/usr/bin/env bash
+case "${1:-} ${2:-}" in
+  'release delete')
+    rm -f "$FAKE_RELEASE_STATE/release"
+    ;;
+  'release view')
+    [[ -e $FAKE_RELEASE_STATE/release ]]
+    ;;
+  'api --method')
+    rm -f "$FAKE_RELEASE_STATE/tag"
+    ;;
+  *)
+    exit 64
+    ;;
+esac
+EOF
+cat > "$fixture/bin/git" << 'EOF'
+#!/usr/bin/env bash
+[[ ${1:-} == ls-remote ]] || exit 64
+[[ -e $FAKE_RELEASE_STATE/tag ]]
+EOF
+chmod +x "$fixture/bin/gh" "$fixture/bin/git"
+
+cleanup_state="$fixture/release-cleanup"
+mkdir -p "$cleanup_state"
+touch "$cleanup_state/release"
+env \
+  PATH="$fixture/bin:$PATH" \
+  FAKE_RELEASE_STATE="$cleanup_state" \
+  GITHUB_REPOSITORY=example/t1-plus-macos \
+  "$fixture/scripts/delete-release-candidate.sh" v1.2.3
+[[ ! -e $cleanup_state/release ]]
+
+touch "$cleanup_state/release" "$cleanup_state/tag"
+env \
+  PATH="$fixture/bin:$PATH" \
+  FAKE_RELEASE_STATE="$cleanup_state" \
+  GITHUB_REPOSITORY=example/t1-plus-macos \
+  "$fixture/scripts/delete-release-candidate.sh" v1.2.3
+[[ ! -e $cleanup_state/release ]]
+[[ ! -e $cleanup_state/tag ]]
+
+expect_failure env \
+  PATH="$fixture/bin:$PATH" \
+  FAKE_RELEASE_STATE="$cleanup_state" \
+  GITHUB_REPOSITORY=example/t1-plus-macos \
+  "$fixture/scripts/delete-release-candidate.sh" invalid
 
 printf 'Release metadata tests passed.\n'
