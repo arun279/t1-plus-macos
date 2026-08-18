@@ -118,6 +118,8 @@ jobs:
           NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
         run: |
           notary_key="$RUNNER_TEMP/AuthKey_$NOTARY_KEY_ID.p8"
+          notary_result="$RUNNER_TEMP/notarization-result.json"
+          notary_log="$RUNNER_TEMP/notarization-log.json"
           printf 'NOTARY_KEY_PATH=%s\n' "$notary_key" >> "$GITHUB_ENV"
           printf '%s' "$NOTARY_KEY_BASE64" | base64 --decode > "$notary_key"
           chmod 600 "$notary_key"
@@ -125,7 +127,19 @@ jobs:
             --key "$notary_key" \
             --key-id "$NOTARY_KEY_ID" \
             --issuer "$NOTARY_ISSUER_ID" \
-            --wait
+            --wait \
+            --output-format json > "$notary_result"
+          submission_id=$(jq -er '.id' "$notary_result")
+          [[ $(jq -er '.status' "$notary_result") == Accepted ]]
+          xcrun notarytool log "$submission_id" \
+            --key "$notary_key" \
+            --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER_ID" \
+            "$notary_log"
+          if ! jq -e '(.issues // []) | length == 0' "$notary_log" > /dev/null; then
+            jq '.issues' "$notary_log" >&2
+            exit 1
+          fi
           xcrun stapler staple "$RELEASE_DMG"
       - name: Verify exact distributable
         run: |
