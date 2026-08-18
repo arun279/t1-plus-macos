@@ -153,7 +153,8 @@ EOF
 cat > "$fixture/bin/git" << 'EOF'
 #!/usr/bin/env bash
 [[ ${1:-} == ls-remote ]] || exit 64
-[[ -e $FAKE_RELEASE_STATE/tag ]]
+[[ ${FAKE_TAG_LOOKUP_ERROR:-} != true ]] || exit 128
+[[ -e $FAKE_RELEASE_STATE/tag ]] || exit 2
 EOF
 chmod +x "$fixture/bin/gh" "$fixture/bin/git"
 
@@ -175,6 +176,15 @@ env \
   "$fixture/scripts/delete-release-candidate.sh" v1.2.3
 [[ ! -e $cleanup_state/release ]]
 [[ ! -e $cleanup_state/tag ]]
+
+touch "$cleanup_state/release"
+expect_failure env \
+  PATH="$fixture/bin:$PATH" \
+  FAKE_RELEASE_STATE="$cleanup_state" \
+  FAKE_TAG_LOOKUP_ERROR=true \
+  GITHUB_REPOSITORY=example/t1-plus-macos \
+  "$fixture/scripts/delete-release-candidate.sh" v1.2.3
+[[ -e $cleanup_state/release ]]
 
 expect_failure env \
   PATH="$fixture/bin:$PATH" \
