@@ -74,7 +74,7 @@ trap cleanup EXIT
 hdiutil attach -quiet -readonly -nobrowse -mountpoint "$mount_point" "$dmg_path"
 attached=true
 app_path="$mount_point/T1 Plus Touchpad Support for macOS.app"
-helper_path="$app_path/Contents/Library/LoginItems/T1PlusHelper.app"
+helper_path="$app_path/Contents/MacOS/T1PlusHelper"
 codesign --verify --strict --verbose=2 "$helper_path"
 codesign --verify --deep --strict --verbose=2 "$app_path"
 

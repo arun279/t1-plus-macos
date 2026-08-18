@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import CoreGraphics
 import Foundation
@@ -22,7 +23,10 @@ final class T1SupportModel: ObservableObject {
   @Published private(set) var errorMessage: String?
   @Published private(set) var noticeMessage: String?
 
-  private let service = SMAppService.loginItem(identifier: "io.github.arun279.t1plus.helper")
+  private let service = SMAppService.agent(
+    plistName: "io.github.arun279.t1plus.helper.plist"
+  )
+  private var relaunchAfterEventPostingRequest = false
 
   init() {
     refresh()
@@ -75,8 +79,15 @@ final class T1SupportModel: ObservableObject {
   func requestEventPosting() {
     errorMessage = nil
     noticeMessage = nil
-    _ = CGRequestPostEventAccess()
+    relaunchAfterEventPostingRequest = !CGRequestPostEventAccess()
     refresh()
+  }
+
+  func applicationDidBecomeActive() {
+    refresh()
+    guard relaunchAfterEventPostingRequest, !eventPostingGranted else { return }
+    relaunchAfterEventPostingRequest = false
+    relaunch()
   }
 
   func setSupportEnabled(_ enabled: Bool) {
@@ -217,6 +228,26 @@ final class T1SupportModel: ObservableObject {
     IOHIDManagerSetDeviceMatching(manager, matching as CFDictionary)
     guard let devices = IOHIDManagerCopyDevices(manager) else { return false }
     return CFSetGetCount(devices) > 0
+  }
+
+  private func relaunch() {
+    let configuration = NSWorkspace.OpenConfiguration()
+    configuration.activates = true
+    configuration.createsNewApplicationInstance = true
+    NSWorkspace.shared.openApplication(
+      at: Bundle.main.bundleURL,
+      configuration: configuration
+    ) { _, error in
+      Task { @MainActor in
+        if let error {
+          self.errorMessage =
+            "Quit and reopen the app to finish granting Accessibility. "
+            + error.localizedDescription
+          return
+        }
+        NSApplication.shared.terminate(nil)
+      }
+    }
   }
 
   private static var architecture: String {

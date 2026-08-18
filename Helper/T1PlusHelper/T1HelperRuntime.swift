@@ -8,6 +8,12 @@ import T1Settings
 
 import struct OSLog.Logger
 
+enum T1HelperStartResult {
+  case started
+  case permissionDenied
+  case failed
+}
+
 final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
   private let logger = Logger(subsystem: "io.github.arun279.t1plus", category: "helper")
   private var output = CGEventOutput()
@@ -27,22 +33,22 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
   private var signalSources: [DispatchSourceSignal] = []
   private var started = false
 
-  func start() -> Bool {
-    guard !started else { return true }
+  func start() -> T1HelperStartResult {
+    guard !started else { return .started }
     guard IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted else {
       logger.error("Input Monitoring permission is not granted")
-      return false
+      return .permissionDenied
     }
     guard CGPreflightPostEventAccess() else {
       logger.error("Accessibility event-posting permission is not granted")
-      return false
+      return .permissionDenied
     }
     inputGate = T1InputGate()
     engine.configuration = T1SettingsStore.load().gestureConfiguration
     lifecycle.start()
     guard input.start() else {
       lifecycle.stop()
-      return false
+      return .failed
     }
 
     settingsObserver = T1SettingsObserver()
@@ -55,7 +61,7 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
     installSignalSources()
     started = true
     logger.notice("T1 Plus helper started")
-    return true
+    return .started
   }
 
   func run() {

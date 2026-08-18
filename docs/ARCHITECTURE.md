@@ -18,14 +18,14 @@ flowchart TD
 ## Process model
 
 The settings app owns onboarding, permissions, configuration, diagnostics, updates, and uninstall.
-The helper is bundled under `Contents/Library/LoginItems` and registered with `SMAppService` only
-when support is enabled. Closing the settings window does not stop enabled input support. Disabling
-support unregisters and terminates the helper, leaving no resident process.
+The helper is a launch-agent executable bundled under `Contents/MacOS` and registered with
+`SMAppService` only when support is enabled. Closing the settings window does not stop enabled input
+support. Disabling support unregisters and terminates the helper, leaving no resident process.
 
 Installation and Bluetooth pairing are independent. If the device is already connected, the helper
 matches it when enabled. If the app is enabled first, the helper remains event-driven until the
 device connects. The direct-distribution DMG instructs users to copy the app into Applications before
-launching it so the login-item path remains available after the disk image is ejected.
+launching it so the launch-agent path remains available after the disk image is ejected.
 
 The supported CoreGraphics backend requires two macOS privacy grants: Input Monitoring for shared
 HID report access and the event-posting privilege displayed by macOS under Accessibility. The app
@@ -34,10 +34,12 @@ may separately require approval for the background item. Automation access to Sy
 Recording, Full Disk Access, Bluetooth privacy, administrator access, and root authorization are not
 part of the product permission model.
 
-The main app and helper both carry the same specific Input Monitoring usage description. Production
-builds use a stable signing identity, and `SMAppService` establishes the main app as the helper's
-responsible code so macOS can present and retain consent under the product identity. Development
-builds launched through Terminal, SSH, or a debugger are not valid permission-onboarding evidence.
+The main app carries the specific Input Monitoring usage description. The launch-agent executable
+lives directly in the parent app's `Contents/MacOS` directory instead of a separately identified
+nested app. Production builds use a stable signing identity, and `SMAppService` establishes the main
+app as the agent's responsible code so macOS can present and retain consent under the product
+identity. Development builds launched through Terminal, SSH, or a debugger are not valid
+permission-onboarding evidence.
 
 Settings use a versioned, bounded `Codable` value in a dedicated per-user preferences suite. The
 helper uses key-value observation on that one settings key, Apple's documented mechanism for changes
@@ -56,7 +58,7 @@ and bounded effective settings. The report contains no raw touch data, event log
 filesystem path, or device serial number. SwiftUI's standard document exporter lets the user choose
 the destination without another privacy grant.
 
-The removal action unregisters the login item and deletes the dedicated settings value. It never
+The removal action unregisters the launch agent and deletes the dedicated settings value. It never
 writes to the device and does not try to delete its own app bundle or manipulate TCC records. The UI
 instructs the user to move the remaining app to Trash; macOS remains the authority for revoking any
 privacy grants.

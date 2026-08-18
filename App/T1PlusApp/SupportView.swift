@@ -29,7 +29,7 @@ struct SupportView: View {
     .frame(width: 560, height: 720)
     .onChange(of: scenePhase) { phase in
       if phase == .active {
-        model.refresh()
+        model.applicationDidBecomeActive()
       }
     }
     .fileExporter(
@@ -78,7 +78,9 @@ private extension SupportView {
           model.refresh()
         }
       }
-      .padding(.top, 4)
+      .frame(minHeight: 34)
+      .padding(.horizontal, 4)
+      .padding(.vertical, 6)
     }
   }
 
@@ -118,7 +120,8 @@ private extension SupportView {
           action: model.requestEventPosting
         )
       }
-      .padding(.top, 4)
+      .padding(.horizontal, 4)
+      .padding(.vertical, 6)
     }
   }
 
@@ -165,7 +168,8 @@ private extension SupportView {
         .font(.callout)
         .foregroundStyle(.secondary)
       }
-      .padding(.top, 4)
+      .padding(.horizontal, 4)
+      .padding(.vertical, 6)
     }
   }
 
@@ -257,7 +261,8 @@ private extension SupportView {
           }
         }
       }
-      .padding(.top, 4)
+      .padding(.horizontal, 4)
+      .padding(.vertical, 6)
     }
   }
 
@@ -283,7 +288,8 @@ private extension SupportView {
           }
         }
       }
-      .padding(.top, 4)
+      .padding(.horizontal, 4)
+      .padding(.vertical, 6)
     }
   }
 
@@ -374,8 +380,10 @@ private struct PermissionRow: View {
         Text("Granted")
           .font(.callout.weight(.medium))
           .foregroundStyle(.secondary)
+          .frame(minWidth: 108, alignment: .trailing)
       } else {
         Button(actionTitle, action: action)
+          .frame(minWidth: 108, alignment: .trailing)
       }
     }
   }
