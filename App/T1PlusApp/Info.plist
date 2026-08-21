@@ -33,7 +33,7 @@
   <key>SUEnableAutomaticChecks</key>
   <false/>
   <key>SUFeedURL</key>
-  <string>https://github.com/arun279/t1-plus-macos/releases/latest/download/appcast.xml</string>
+  <string>https://arun279.github.io/t1-plus-macos/appcast.xml</string>
   <key>SUPublicEDKey</key>
   <string>lL2iKgAHflTViGD7149uzVhz+p9jbFmnXjjoiDTS414=</string>
   <key>SURequireSignedFeed</key>

@@ -11,3 +11,4 @@ scripts/test-dco.sh
 scripts/test-codeql-relevance.sh
 scripts/test-release-metadata.sh
 scripts/test-appcast.sh
+scripts/test-update-feed.sh

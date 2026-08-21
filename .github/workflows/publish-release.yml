@@ -97,3 +97,51 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: v${{ inputs.version }}
         run: gh release edit "$RELEASE_TAG" --draft=false --latest
+
+  update_feed:
+    name: release / deploy-update-feed
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      attestations: read # Required to verify the published appcast before deployment.
+      contents: read
+      id-token: write # Required by the GitHub Pages deployment action.
+      pages: write # Required to deploy the update feed to GitHub Pages.
+    steps:
+      - name: Check out exact protected source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download and verify published update feed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
+        run: |
+          mkdir -p .build/published-feed
+          gh release download "$RELEASE_TAG" \
+            --pattern appcast.xml \
+            --dir .build/published-feed
+          appcast_path=.build/published-feed/appcast.xml
+          gh attestation verify \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
+            "$appcast_path"
+          scripts/stage-update-feed.sh "$appcast_path" .build/update-feed
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Upload update feed
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: .build/update-feed
+      - name: Deploy published update feed
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+      - name: Verify deployed update feed
+        env:
+          APPCAST_URL: >-
+            https://arun279.github.io/t1-plus-macos/appcast.xml?release=${{ inputs.version }}
+        run: scripts/verify-served-update-feed.sh .build/published-feed/appcast.xml "$APPCAST_URL"
