@@ -79,6 +79,8 @@ jobs:
           persist-credentials: false
       - name: Build patched Swift extractor
         if: inputs.variant == 'patched-extractor-intel'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           bazelisk_path="$PWD/.build/tools/bazelisk"
