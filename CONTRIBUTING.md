@@ -28,6 +28,7 @@ their recorded SHA-256 digests into ignored `.build/local-tools`. Review and inv
 | `scripts/lint.sh` | Check Swift, shell, and workflow sources |
 | `scripts/test.sh` | Run deterministic core tests |
 | `scripts/test-ui.sh` | Operate the native app with XCUITest without requesting permissions or registering the helper |
+| `scripts/check-workspace-health.sh` | Fail before expensive local builds when disk, worktree, or temporary-output limits are exceeded |
 | `scripts/deadcode.sh` | Find unused Swift declarations and imports after a clean build |
 | `scripts/build.sh` | Build the native app and embedded helper |
 | `scripts/test-app-package.sh` | Verify bundle identity, architecture, permissions, lifecycle APIs, and the read-only HID boundary |
