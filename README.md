@@ -85,8 +85,9 @@ local diagnostics report and remove the helper registration and settings without
 device. The language decision and release-build evidence are recorded in
 [ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Each published release is
 Developer ID-signed, notarized, stapled, and made from an accepted draft artifact without rebuilding
-it. Each release also includes a signed Sparkle appcast so installed copies can update without a
-manual reinstall. The release checklist includes fresh permission and service lifecycle testing, full hardware
+it. Each release also includes a signed Sparkle appcast, deployed from the accepted artifact to a
+stable GitHub Pages URL, so installed copies can update without a manual reinstall. The release
+checklist includes fresh permission and service lifecycle testing, full hardware
 behavior on macOS, and unchanged-device regression testing on Windows.
 
 ## Independence and trademarks

@@ -25,7 +25,7 @@ icon_assets=App/T1PlusApp/Assets.xcassets/AppIcon.appiconset
 [[ $(plutil -extract NSInputMonitoringUsageDescription raw "$info_plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
 [[ $(plutil -extract SUEnableAutomaticChecks raw "$info_plist") == false ]]
 [[ $(plutil -extract SUAutomaticallyUpdate raw "$info_plist") == false ]]
-[[ $(plutil -extract SUFeedURL raw "$info_plist") == 'https://github.com/arun279/t1-plus-macos/releases/latest/download/appcast.xml' ]]
+[[ $(plutil -extract SUFeedURL raw "$info_plist") == 'https://arun279.github.io/t1-plus-macos/appcast.xml' ]]
 [[ $(plutil -extract SUPublicEDKey raw "$info_plist") == 'lL2iKgAHflTViGD7149uzVhz+p9jbFmnXjjoiDTS414=' ]]
 [[ $(plutil -extract SUVerifyUpdateBeforeExtraction raw "$info_plist") == true ]]
 [[ $(plutil -extract SURequireSignedFeed raw "$info_plist") == true ]]

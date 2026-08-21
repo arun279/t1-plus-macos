@@ -22,6 +22,8 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 90
     environment: release-signing
+    outputs:
+      bootstrap_feed: ${{ steps.release_history.outputs.bootstrap_feed }}
     permissions:
       attestations: write # Required to attest the signed candidate.
       contents: read
@@ -43,6 +45,7 @@ jobs:
           [[ -s .build/release-notes.md ]]
           scripts/test.sh
       - name: Refuse a replaced or nonmonotonic version
+        id: release_history
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: v${{ inputs.version }}
@@ -56,6 +59,19 @@ jobs:
           if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" > /dev/null 2>&1; then
             printf 'error: tag already exists: %s\n' "$RELEASE_TAG" >&2
             exit 1
+          fi
+          published_release_count=$(
+            gh release list \
+              --exclude-drafts \
+              --exclude-pre-releases \
+              --limit 1 \
+              --json tagName \
+              --jq length
+          )
+          if [[ $published_release_count == 0 ]]; then
+            printf 'bootstrap_feed=true\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'bootstrap_feed=false\n' >> "$GITHUB_OUTPUT"
           fi
       - name: Import Developer ID certificate
         env:
@@ -269,3 +285,54 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "T1 Plus Touchpad Support $RELEASE_TAG" \
             --notes-file "$RELEASE_NOTES"
+
+  bootstrap_feed:
+    name: release / bootstrap-update-feed
+    if: needs.candidate.outputs.bootstrap_feed == 'true'
+    needs:
+      - candidate
+      - draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      attestations: read # Required to verify the candidate appcast before deployment.
+      contents: read
+      id-token: write # Required by the GitHub Pages deployment action.
+      pages: write # Required to deploy the update feed to GitHub Pages.
+    steps:
+      - name: Check out exact protected source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download exact signed candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: signed-release-candidate
+          path: .build/candidate
+      - name: Verify and stage first-release update feed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          appcast_path=.build/candidate/appcast.xml
+          gh attestation verify \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
+            "$appcast_path"
+          scripts/stage-update-feed.sh "$appcast_path" .build/update-feed
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Upload update feed
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: .build/update-feed
+      - name: Deploy first-release update feed
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+      - name: Verify deployed update feed
+        env:
+          APPCAST_URL: >-
+            https://arun279.github.io/t1-plus-macos/appcast.xml?candidate=${{ github.sha }}
+        run: scripts/verify-served-update-feed.sh .build/candidate/appcast.xml "$APPCAST_URL"

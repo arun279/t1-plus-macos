@@ -33,6 +33,7 @@ their recorded SHA-256 digests into ignored `.build/local-tools`. Review and inv
 | `scripts/build.sh` | Build the native app and embedded helper |
 | `scripts/test-app-package.sh` | Verify bundle identity, architecture, permissions, lifecycle APIs, and the read-only HID boundary |
 | `scripts/verify-appcast.sh` | Verify the signed update feed, release version, and exact release URL |
+| `scripts/test-update-feed.sh` | Verify stable-feed staging and first-release bootstrap policy |
 | `scripts/check.sh` | Run the complete pre-push gate |
 
 The settings tests own schema rejection, bounds, gesture mapping, preference round-trip, observer
@@ -58,13 +59,16 @@ developer workstation.
 2. Run **Release candidate** with that exact version. The protected `release-signing` environment
    builds the universal app, signs it with Developer ID, creates and signs the disk image, submits it
    for notarization, staples it, verifies Gatekeeper acceptance, signs the archive and update feed
-   with Sparkle Ed25519, records provenance, and creates a draft GitHub release.
+   with Sparkle Ed25519, records provenance, and creates a draft GitHub release. Before the first
+   published release only, it also deploys that candidate's signed feed so the exact candidate can
+   exercise Sparkle without exposing later draft updates to existing users.
 3. Test the exact draft disk image on a clean supported Mac with a physical T1 Plus. Cover fresh
    permissions, pairing before and after installation, enable and disable, gestures, reconnect,
    sleep and wake, removal, rollback, and the unchanged device on Windows.
 4. If acceptance fails, run **Discard release candidate** before preparing a corrected candidate.
    If it passes, run **Publish release** and attest both macOS and Windows acceptance. The protected
-   `release-publish` environment publishes the already accepted bytes without rebuilding them.
+   `release-publish` environment publishes the already accepted bytes without rebuilding them, then
+   deploys the attested appcast to the stable GitHub Pages feed.
 
 `release-signing` requires these environment secrets:
 
