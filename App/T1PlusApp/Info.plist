@@ -28,5 +28,17 @@
   <string>Reads touch reports from a connected T1 Plus to provide touchpad input.</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
+  <key>SUAutomaticallyUpdate</key>
+  <false/>
+  <key>SUEnableAutomaticChecks</key>
+  <false/>
+  <key>SUFeedURL</key>
+  <string>https://github.com/arun279/t1-plus-macos/releases/latest/download/appcast.xml</string>
+  <key>SUPublicEDKey</key>
+  <string>lL2iKgAHflTViGD7149uzVhz+p9jbFmnXjjoiDTS414=</string>
+  <key>SURequireSignedFeed</key>
+  <true/>
+  <key>SUVerifyUpdateBeforeExtraction</key>
+  <true/>
 </dict>
 </plist>

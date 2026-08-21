@@ -16,15 +16,24 @@ info_plist="$app_path/Contents/Info.plist"
 helper_executable="$app_path/Contents/MacOS/T1PlusHelper"
 agent_plist="$app_path/Contents/Library/LaunchAgents/io.github.arun279.t1plus.helper.plist"
 app_executable="$app_path/Contents/MacOS/T1 Plus Touchpad Support for macOS"
+sparkle_framework="$app_path/Contents/Frameworks/Sparkle.framework"
 icon_assets=App/T1PlusApp/Assets.xcassets/AppIcon.appiconset
 
 [[ $(plutil -extract CFBundleIdentifier raw "$info_plist") == io.github.arun279.t1plus ]]
 [[ $(plutil -extract CFBundleShortVersionString raw "$info_plist") == "$(< VERSION)" ]]
 [[ $(plutil -extract CFBundleIconName raw "$info_plist") == AppIcon ]]
 [[ $(plutil -extract NSInputMonitoringUsageDescription raw "$info_plist") == 'Reads touch reports from a connected T1 Plus to provide touchpad input.' ]]
+[[ $(plutil -extract SUEnableAutomaticChecks raw "$info_plist") == false ]]
+[[ $(plutil -extract SUAutomaticallyUpdate raw "$info_plist") == false ]]
+[[ $(plutil -extract SUFeedURL raw "$info_plist") == 'https://github.com/arun279/t1-plus-macos/releases/latest/download/appcast.xml' ]]
+[[ $(plutil -extract SUPublicEDKey raw "$info_plist") == 'lL2iKgAHflTViGD7149uzVhz+p9jbFmnXjjoiDTS414=' ]]
+[[ $(plutil -extract SUVerifyUpdateBeforeExtraction raw "$info_plist") == true ]]
+[[ $(plutil -extract SURequireSignedFeed raw "$info_plist") == true ]]
 [[ -x $app_executable ]]
+[[ -d $sparkle_framework ]]
 [[ -f $app_path/Contents/Resources/Assets.car ]]
 [[ -f $app_path/Contents/Resources/AppIcon.icns ]]
+cmp -s THIRD_PARTY_NOTICES.txt "$app_path/Contents/Resources/THIRD_PARTY_NOTICES.txt"
 [[ -x $helper_executable ]]
 [[ -f $agent_plist ]]
 [[ ! -e $app_path/Contents/Library/LoginItems ]]
@@ -85,6 +94,12 @@ if [[ $undefined_symbols == *IOHIDDeviceSetReport* ||
   printf 'error: embedded helper links a forbidden HID write API\n' >&2
   exit 1
 fi
+
+if otool -L "$helper_executable" | grep -q Sparkle; then
+  printf 'error: embedded helper unexpectedly links Sparkle\n' >&2
+  exit 1
+fi
+otool -L "$app_executable" | grep -Fq '@rpath/Sparkle.framework/Versions/B/Sparkle'
 
 app_symbols=$(nm -u "$app_executable")
 for required_symbol in \

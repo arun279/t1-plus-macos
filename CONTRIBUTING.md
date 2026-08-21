@@ -31,6 +31,7 @@ their recorded SHA-256 digests into ignored `.build/local-tools`. Review and inv
 | `scripts/deadcode.sh` | Find unused Swift declarations and imports after a clean build |
 | `scripts/build.sh` | Build the native app and embedded helper |
 | `scripts/test-app-package.sh` | Verify bundle identity, architecture, permissions, lifecycle APIs, and the read-only HID boundary |
+| `scripts/verify-appcast.sh` | Verify the signed update feed, release version, and exact release URL |
 | `scripts/check.sh` | Run the complete pre-push gate |
 
 The settings tests own schema rejection, bounds, gesture mapping, preference round-trip, observer
@@ -55,8 +56,8 @@ developer workstation.
    the shared positive build number, and a dated `CHANGELOG.md` section.
 2. Run **Release candidate** with that exact version. The protected `release-signing` environment
    builds the universal app, signs it with Developer ID, creates and signs the disk image, submits it
-   for notarization, staples it, verifies Gatekeeper acceptance, records provenance, and creates a
-   draft GitHub release.
+   for notarization, staples it, verifies Gatekeeper acceptance, signs the archive and update feed
+   with Sparkle Ed25519, records provenance, and creates a draft GitHub release.
 3. Test the exact draft disk image on a clean supported Mac with a physical T1 Plus. Cover fresh
    permissions, pairing before and after installation, enable and disable, gestures, reconnect,
    sleep and wake, removal, rollback, and the unchanged device on Windows.
@@ -72,8 +73,10 @@ developer workstation.
 - `APPLE_NOTARY_ISSUER_ID`
 - `APPLE_NOTARY_KEY_ID`
 - `APPLE_NOTARY_KEY_P8_BASE64`
+- `SPARKLE_ED25519_PRIVATE_KEY`
 
-Signing certificates and notarization keys must remain in GitHub environment secrets. They must not
+Signing certificates, notarization keys, and the Sparkle private key must remain in GitHub
+environment secrets. They must not
 be committed, uploaded as ordinary artifacts, or copied into a release.
 
 ## Contribution terms

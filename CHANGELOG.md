@@ -4,7 +4,7 @@ This project follows Semantic Versioning. This file is the source for public rel
 
 ## Unreleased
 
-## [0.1.0] - 2026-08-17
+## [0.1.0] - 2026-08-21
 
 ### Added
 
@@ -13,13 +13,14 @@ This project follows Semantic Versioning. This file is the source for public rel
 - Swift report decoder and allocation-free gesture state machine with deterministic tests.
 - CoreGraphics pointer, click, drag, continuous scroll, momentum, zoom-shortcut, and
   three/four-finger output.
-- Native permission onboarding, device/helper status, and support enable/disable controls.
+- Native permission onboarding, device/helper status, and touchpad on/off controls.
 - Versioned, bounded pointer, tap, scroll, and gesture settings with live helper reload.
 - Bounded local diagnostics export, settings reset, and support removal.
 - Protected pull-request checks for formatting, linting, dead code, tests, universal builds,
   package structure, secrets, and workflow security.
 - Native XCUITest coverage for essential controls, support-removal disclosure, and final-window
   process termination.
+- Built-in manual and opt-in automatic updates using Sparkle 2.9.6.
 
 ### Security
 
@@ -32,3 +33,4 @@ This project follows Semantic Versioning. This file is the source for public rel
 - Enforce an allowlist containing only the required Input Monitoring privacy description.
 - Prevent two-finger translation from being misclassified as pinch and rate-limit synthesized zoom
   shortcuts.
+- Require signed update feeds and archives in addition to Developer ID signing and notarization.

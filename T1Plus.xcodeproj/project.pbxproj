@@ -30,6 +30,9 @@
 		100000000000000000000015 /* T1HelperStatusProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000011 /* T1HelperStatusProbe.swift */; };
 		100000000000000000000016 /* T1HelperStatusServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000012 /* T1HelperStatusServer.swift */; };
 		100000000000000000000017 /* DiagnosticsDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000013 /* DiagnosticsDocument.swift */; };
+		100000000000000000000018 /* SoftwareUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000014 /* SoftwareUpdater.swift */; };
+		100000000000000000000019 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000008 /* Sparkle */; };
+		10000000000000000000001A /* THIRD_PARTY_NOTICES.txt in Resources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000015 /* THIRD_PARTY_NOTICES.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +97,8 @@
 		200000000000000000000011 /* T1HelperStatusProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HelperStatusProbe.swift; sourceTree = "<group>"; };
 		200000000000000000000012 /* T1HelperStatusServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = T1HelperStatusServer.swift; sourceTree = "<group>"; };
 		200000000000000000000013 /* DiagnosticsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsDocument.swift; sourceTree = "<group>"; };
+		200000000000000000000014 /* SoftwareUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftwareUpdater.swift; sourceTree = "<group>"; };
+		200000000000000000000015 /* THIRD_PARTY_NOTICES.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = THIRD_PARTY_NOTICES.txt; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				100000000000000000000019 /* Sparkle in Frameworks */,
 				10000000000000000000000E /* T1Settings in Frameworks */,
 				100000000000000000000005 /* T1Gestures in Frameworks */,
 				100000000000000000000004 /* T1Protocol in Frameworks */,
@@ -134,6 +140,7 @@
 				600000000000000000000005 /* App UI Tests */,
 				600000000000000000000003 /* Helper */,
 				600000000000000000000006 /* Shared */,
+				200000000000000000000015 /* THIRD_PARTY_NOTICES.txt */,
 				600000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -143,6 +150,7 @@
 			children = (
 				200000000000000000000001 /* T1PlusApp.swift */,
 				200000000000000000000013 /* DiagnosticsDocument.swift */,
+				200000000000000000000014 /* SoftwareUpdater.swift */,
 				200000000000000000000011 /* T1HelperStatusProbe.swift */,
 				20000000000000000000000B /* T1SupportModel.swift */,
 				20000000000000000000000C /* SupportView.swift */,
@@ -215,6 +223,7 @@
 				D00000000000000000000002 /* T1Protocol */,
 				D00000000000000000000003 /* T1Gestures */,
 				D00000000000000000000006 /* T1Settings */,
+				D00000000000000000000008 /* Sparkle */,
 			);
 			productName = T1PlusApp;
 			productReference = 200000000000000000000005 /* T1 Plus Touchpad Support for macOS.app */;
@@ -293,6 +302,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D00000000000000000000001 /* T1Core */,
+				E00000000000000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 600000000000000000000004 /* Products */;
@@ -312,6 +322,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000010 /* Assets.xcassets in Resources */,
+				10000000000000000000001A /* THIRD_PARTY_NOTICES.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,6 +335,7 @@
 			files = (
 				100000000000000000000001 /* T1PlusApp.swift in Sources */,
 				100000000000000000000017 /* DiagnosticsDocument.swift in Sources */,
+				100000000000000000000018 /* SoftwareUpdater.swift in Sources */,
 				100000000000000000000013 /* T1HelperStatusProtocol.swift in Sources */,
 				100000000000000000000015 /* T1HelperStatusProbe.swift in Sources */,
 				10000000000000000000000C /* T1SupportModel.swift in Sources */,
@@ -659,6 +671,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		E00000000000000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.9.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		D00000000000000000000002 /* T1Protocol */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -683,6 +706,11 @@
 		D00000000000000000000007 /* T1Settings */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = T1Settings;
+		};
+		D00000000000000000000008 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E00000000000000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

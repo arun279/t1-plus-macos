@@ -10,6 +10,7 @@ final class T1PlusAppUITests: XCTestCase {
     assertExists(app.staticTexts["Permissions"])
     assertExists(app.staticTexts["Touchpad"])
     assertExists(app.staticTexts["Settings"])
+    assertExists(app.staticTexts["Updates"])
     assertExists(app.staticTexts["Diagnostics and Uninstall"])
 
     let touchpadToggle =
@@ -23,6 +24,8 @@ final class T1PlusAppUITests: XCTestCase {
     assertExists(app.sliders["Pointer speed"])
     assertExists(app.sliders["Scroll speed"])
     assertExists(app.buttons["Save Diagnostics…"])
+
+    assertUpdateControls(app)
 
     let prepareForUninstall = app.buttons["Prepare for Uninstall…"]
     let scrollView = app.scrollViews.firstMatch
@@ -49,6 +52,30 @@ final class T1PlusAppUITests: XCTestCase {
       ).firstMatch
     )
     cancel.click()
+  }
+
+  private func assertUpdateControls(_ app: XCUIApplication) {
+    let checkForUpdates = app.buttons["Check for Updates…"]
+    let automaticChecks =
+      app.descendants(matching: .any).matching(
+        identifier: "automatically-check-updates-toggle"
+      ).firstMatch
+    let automaticInstall =
+      app.descendants(matching: .any).matching(
+        identifier: "automatically-install-updates-toggle"
+      ).firstMatch
+    let scrollView = app.scrollViews.firstMatch
+    for _ in 0..<4 where !checkForUpdates.isHittable {
+      scrollView.swipeUp()
+    }
+    XCTAssertTrue(checkForUpdates.isHittable, "The update action is not reachable.")
+    assertExists(automaticChecks)
+    assertExists(automaticInstall)
+    assertExists(
+      app.staticTexts[
+        "Updates are signed and verified. Automatic checks run only while this app is open."
+      ]
+    )
   }
 
   func testClosingLastWindowTerminatesApp() {
