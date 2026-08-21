@@ -1,0 +1,15 @@
+diff --git a/swift/extractor/infra/SwiftBodyEmissionStrategy.h b/swift/extractor/infra/SwiftBodyEmissionStrategy.h
+index b97600c..52c8efc 100644
+--- a/swift/extractor/infra/SwiftBodyEmissionStrategy.h
++++ b/swift/extractor/infra/SwiftBodyEmissionStrategy.h
+@@ -15,5 +15,7 @@ class SwiftBodyEmissionStrategy {
+         currentLazyDeclaration(currentLazyDeclaration) {
+-    llvm::SmallVector<swift::Decl*> decls;
+-    currentModule.getTopLevelDecls(decls);
+-    currentTopLevelDecls.insert(decls.begin(), decls.end());
++    if (!currentLazyDeclaration) {
++      llvm::SmallVector<swift::Decl*> decls;
++      currentModule.getTopLevelDecls(decls);
++      currentTopLevelDecls.insert(decls.begin(), decls.end());
++    }
+   }

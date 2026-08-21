@@ -22,6 +22,7 @@ on:
           - profile-intel
           - profile-package-intel
           - shared-module-cache-intel
+          - patched-extractor-intel
       commit_sha:
         description: Exact commit to benchmark
         required: true
@@ -36,15 +37,15 @@ concurrency:
 jobs:
   swift:
     name: security / codeql
-    runs-on: ${{ (inputs.variant == 'baseline-intel' || inputs.variant == 'release-noopt-singlefile-intel' || inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel' || inputs.variant == 'shared-module-cache-intel') && 'macos-26-intel' || 'macos-26' }}
-    timeout-minutes: 45
+    runs-on: ${{ (inputs.variant == 'baseline-intel' || inputs.variant == 'release-noopt-singlefile-intel' || inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel' || inputs.variant == 'shared-module-cache-intel' || inputs.variant == 'patched-extractor-intel') && 'macos-26-intel' || 'macos-26' }}
+    timeout-minutes: ${{ inputs.variant == 'patched-extractor-intel' && 90 || 45 }}
     env:
       # Package-manifest extraction can begin in an Xcode subprocess that does not
       # inherit variables scoped only to the build step. Define diagnostic controls
       # before CodeQL initialization so the manifest extractor can see them.
       CODEQL_EXTRACTOR_SWIFT_LOG_LEVELS: out:text:debug,*:debug
       CODEQL_EXTRACTOR_SWIFT_RUN_UNDER: ${{ (inputs.variant == 'profile-intel' || inputs.variant == 'profile-package-intel') && format('{0}/scripts/profile-codeql-extractor.sh', github.workspace) || '/usr/bin/time -lp' }}
-      CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: ${{ inputs.variant == 'profile-package-intel' && 'Package.swift' || inputs.variant == 'profile-intel' && 'T1' || 'T1PlusHelper' }}
+      CODEQL_EXTRACTOR_SWIFT_RUN_UNDER_FILTER: ${{ (inputs.variant == 'profile-intel' || inputs.variant == 'patched-extractor-intel') && 'T1' || inputs.variant == 'profile-package-intel' && 'Package.swift' || 'T1PlusHelper' }}
     permissions:
       contents: read
       security-events: write # Required to upload CodeQL results.
@@ -68,13 +69,80 @@ jobs:
             printf 'Expected %s, checked out %s\n' "$EXPECTED_COMMIT" "$actual_commit" >&2
             exit 1
           fi
+      - name: Check out matching CodeQL source
+        if: inputs.variant == 'patched-extractor-intel'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: github/codeql
+          ref: codeql-cli/v2.26.3
+          path: .build/codeql-source
+          persist-credentials: false
+      - name: Build patched Swift extractor
+        if: inputs.variant == 'patched-extractor-intel'
+        run: |
+          set -euo pipefail
+          bazelisk_path="$PWD/.build/tools/bazelisk"
+          mkdir -p "$(dirname "$bazelisk_path")"
+          curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            --output "$bazelisk_path" \
+            https://github.com/bazelbuild/bazelisk/releases/download/v1.29.0/bazelisk-darwin-amd64
+          printf '%s  %s\n' \
+            cee851f726789227d5561004e9904a52be45c3efb56f8b38b6993d6adbaa0409 \
+            "$bazelisk_path" | shasum -a 256 --check
+          chmod 755 "$bazelisk_path"
+
+          git -C .build/codeql-source apply "$PWD/scripts/codeql-lazy-body-strategy.patch"
+          git -C .build/codeql-source diff --check
+          grep -Fq 'if (!currentLazyDeclaration)' \
+            .build/codeql-source/swift/extractor/infra/SwiftBodyEmissionStrategy.h
+
+          (
+            cd .build/codeql-source
+            BAZELISK_HOME="$GITHUB_WORKSPACE/.build/bazelisk-home" \
+              "$bazelisk_path" \
+              --output_user_root="$GITHUB_WORKSPACE/.build/bazel-root" \
+              run \
+              //swift:install \
+              --nouse_action_cache \
+              --noremote_accept_cached \
+              --noremote_upload_local_results \
+              --spawn_strategy=local \
+              -- \
+              --destdir="$GITHUB_WORKSPACE/.build/patched-swift"
+          )
+          test -x .build/patched-swift/tools/osx64/extractor.real
       - name: Initialize Swift analysis
+        id: codeql-init
         uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
           build-mode: manual
           debug: ${{ github.event_name == 'workflow_dispatch' }}
           debug-artifact-name: codeql-debug-${{ inputs.variant || 'standard' }}
           languages: swift
+      - name: Activate patched Swift extractor
+        if: inputs.variant == 'patched-extractor-intel'
+        env:
+          CODEQL_PATH: ${{ steps.codeql-init.outputs.codeql-path }}
+          CODEQL_VERSION: ${{ steps.codeql-init.outputs.codeql-version }}
+        run: |
+          set -euo pipefail
+          [[ $CODEQL_VERSION == 2.26.3 ]]
+          codeql_root=$(cd "$(dirname "$CODEQL_PATH")" && pwd)
+          source_extractor="$PWD/.build/patched-swift/tools/osx64/extractor.real"
+          target_extractor="$codeql_root/swift/tools/osx64/extractor.real"
+          file "$source_extractor" "$target_extractor"
+          otool -L "$source_extractor"
+          cp "$source_extractor" "$target_extractor"
+          chmod 755 "$target_extractor"
+          codesign --force --sign - --timestamp=none "$target_extractor"
+          codesign --verify --strict --verbose=2 "$target_extractor"
+          shasum -a 256 "$target_extractor"
       - name: Build analyzed application
         env:
           CODEQL_VARIANT: ${{ inputs.variant || 'standard' }}
@@ -103,7 +171,7 @@ jobs:
           fi
 
           case "$CODEQL_VARIANT" in
-            standard | baseline-arm | baseline-intel | profile-intel | profile-package-intel | shared-module-cache-intel)
+            standard | baseline-arm | baseline-intel | profile-intel | profile-package-intel | shared-module-cache-intel | patched-extractor-intel)
               build
               ;;
             release-noopt-arm)
