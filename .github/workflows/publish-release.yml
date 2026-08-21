@@ -55,17 +55,7 @@ jobs:
           [[ $(gh release view "$RELEASE_TAG" --json name --jq .name) == "$expected_title" ]]
           expected_notes=$(scripts/release-notes.sh "$REQUESTED_VERSION")
           [[ $(gh release view "$RELEASE_TAG" --json body --jq .body) == "$expected_notes" ]]
-          expected_assets=$(
-            printf '%s\n' \
-              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg" \
-              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg.sha256" \
-              appcast.xml |
-              sort
-          )
-          actual_assets=$(
-            gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | sort
-          )
-          [[ $actual_assets == "$expected_assets" ]]
+          scripts/verify-release-assets.sh "$RELEASE_TAG" "$REQUESTED_VERSION"
       - name: Download and verify accepted draft assets
         env:
           GH_TOKEN: ${{ github.token }}

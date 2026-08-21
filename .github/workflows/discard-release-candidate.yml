@@ -44,16 +44,7 @@ jobs:
           [[ $(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft) == true ]]
           expected_title="T1 Plus Touchpad Support $RELEASE_TAG"
           [[ $(gh release view "$RELEASE_TAG" --json name --jq .name) == "$expected_title" ]]
-          expected_assets=$(
-            printf '%s\n' \
-              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg" \
-              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg.sha256" |
-              sort
-          )
-          actual_assets=$(
-            gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | sort
-          )
-          [[ $actual_assets == "$expected_assets" ]]
+          scripts/verify-release-assets.sh "$RELEASE_TAG" "$REQUESTED_VERSION"
           target=$(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
           git merge-base --is-ancestor "$target" "$GITHUB_SHA"
       - name: Delete rejected draft and any candidate tag
