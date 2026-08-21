@@ -153,6 +153,7 @@ jobs:
           printf 'RELEASE_CHECKSUM=%s\n' "$checksum_path" >> "$GITHUB_ENV"
       - name: Generate signed update feed
         env:
+          RELEASE_VERSION: ${{ inputs.version }}
           SPARKLE_DOWNLOAD_URL_PREFIX: >-
             https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_ED25519_PRIVATE_KEY }}
@@ -160,11 +161,11 @@ jobs:
           appcast_path=.build/release/appcast.xml
           printf '%s\n' "$SPARKLE_PRIVATE_KEY" |
             scripts/generate-appcast.sh \
-              "${{ inputs.version }}" \
+              "$RELEASE_VERSION" \
               "$RELEASE_DMG" \
               "$appcast_path"
           scripts/verify-appcast.sh \
-            "${{ inputs.version }}" \
+            "$RELEASE_VERSION" \
             "$RELEASE_DMG" \
             "$appcast_path"
           printf 'RELEASE_APPCAST=%s\n' "$appcast_path" >> "$GITHUB_ENV"
