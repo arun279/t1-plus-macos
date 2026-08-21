@@ -31,6 +31,7 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
   private var interactionActive = false
   private var settingsObserver: T1SettingsObserver?
   private var signalSources: [DispatchSourceSignal] = []
+  private let statusServer = T1HelperStatusServer()
   private var started = false
 
   func start() -> T1HelperStartResult {
@@ -60,6 +61,7 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
     )
     installSignalSources()
     started = true
+    statusServer.start()
     logger.notice("T1 Plus helper started")
     return .started
   }
@@ -70,6 +72,7 @@ final class T1HelperRuntime: NSObject, T1HIDInputDelegate {
 
   func stop() {
     guard started else { return }
+    statusServer.stop()
     NotificationCenter.default.removeObserver(
       self,
       name: T1SettingsObserver.changedNotification,

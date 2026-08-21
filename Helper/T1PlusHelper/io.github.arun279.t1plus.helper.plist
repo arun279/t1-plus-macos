@@ -11,6 +11,11 @@
 	</dict>
 	<key>Label</key>
 	<string>io.github.arun279.t1plus.helper</string>
+	<key>MachServices</key>
+	<dict>
+		<key>io.github.arun279.t1plus.helper.status</key>
+		<true/>
+	</dict>
 	<key>RunAtLoad</key>
 	<true/>
 </dict>

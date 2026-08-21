@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import T1Settings
-import UniformTypeIdentifiers
 
 struct SupportView: View {
   @ObservedObject var model: T1SupportModel
@@ -17,7 +16,7 @@ struct SupportView: View {
         header
         status
         permissions
-        support
+        touchpad
         error
         notice
         touchpadSettings
@@ -69,9 +68,10 @@ private extension SupportView {
         )
         Divider()
         StatusValue(
-          title: "Support \(model.supportStatus.lowercased())",
-          systemImage: model.supportEnabled ? "checkmark.circle.fill" : "circle",
-          active: model.supportEnabled
+          title: "Touchpad \(model.touchpadStatus.lowercased())",
+          systemImage: touchpadStatusImage,
+          active: model.touchpadOperational,
+          warning: model.touchpadNeedsAttention
         )
         Spacer()
         Button("Refresh") {
@@ -94,7 +94,7 @@ private extension SupportView {
       VStack(alignment: .leading, spacing: 4) {
         Text("T1 Plus Touchpad Support")
           .font(.title2.weight(.semibold))
-        Text("Grant two macOS permissions once, then enable support.")
+        Text("Use your T1 Plus as a touchpad on this Mac.")
           .foregroundStyle(.secondary)
       }
     }
@@ -125,51 +125,68 @@ private extension SupportView {
     }
   }
 
-  private var support: some View {
-    GroupBox("Support") {
+  private var touchpad: some View {
+    GroupBox("Touchpad") {
       VStack(alignment: .leading, spacing: 12) {
         Toggle(
           isOn: Binding(
-            get: { model.supportEnabled },
-            set: { enabled in model.setSupportEnabled(enabled) }
+            get: { model.touchpadEnabled },
+            set: { enabled in model.setTouchpadEnabled(enabled) }
           )
         ) {
           VStack(alignment: .leading, spacing: 2) {
-            Text("Enable T1 Plus support")
-            Text("Runs a small background helper while you are signed in.")
-              .font(.callout)
-              .foregroundStyle(.secondary)
+            Text("Use T1 Plus as a touchpad")
+            Text(
+              "Starts automatically when you sign in and reconnects when the T1 Plus is available."
+            )
+            .font(.callout)
+            .foregroundStyle(.secondary)
           }
         }
         .toggleStyle(.switch)
-        .accessibilityIdentifier("enable-support-toggle")
-        .accessibilityLabel("Enable T1 Plus support")
-        .disabled(!model.supportEnabled && !model.canEnableSupport)
+        .accessibilityIdentifier("touchpad-enabled-toggle")
+        .accessibilityLabel("Use T1 Plus as a touchpad")
+        .disabled(!model.touchpadEnabled && !model.canEnableTouchpad)
 
-        if !model.canEnableSupport {
-          Text("Grant both permissions to enable support.")
+        if !model.canEnableTouchpad {
+          Text("Grant both permissions to turn on the touchpad.")
             .font(.callout)
             .foregroundStyle(.secondary)
         }
 
         if model.serviceState == .requiresApproval {
           HStack {
-            Text("macOS requires approval for this background item.")
+            Text("macOS requires approval before the touchpad can start.")
               .font(.callout)
             Spacer()
             Button("Open Login Items", action: model.openLoginItemSettings)
           }
         }
 
-        Text(
-          "The T1 Plus can be paired before or after support is enabled. "
-            + "The helper waits for it and reconnects automatically."
-        )
-        .font(.callout)
-        .foregroundStyle(.secondary)
+        if model.serviceState == .unavailable {
+          Text(
+            "The touchpad did not start. Turn it off and back on. "
+              + "If the problem continues, save diagnostics."
+          )
+          .font(.callout)
+          .foregroundStyle(.orange)
+        }
       }
       .padding(.horizontal, 4)
       .padding(.vertical, 6)
+    }
+  }
+
+  private var touchpadStatusImage: String {
+    switch model.serviceState {
+    case .enabled:
+      "checkmark.circle.fill"
+    case .checking:
+      "clock"
+    case .unavailable, .requiresApproval:
+      "exclamationmark.triangle.fill"
+    case .disabled:
+      "circle"
     }
   }
 
@@ -192,7 +209,7 @@ private extension SupportView {
   }
 
   private var touchpadSettings: some View {
-    GroupBox("Touchpad") {
+    GroupBox("Settings") {
       VStack(alignment: .leading, spacing: 14) {
         SettingsSlider(
           title: "Pointer speed",
@@ -270,7 +287,7 @@ private extension SupportView {
     GroupBox("Diagnostics and Uninstall") {
       VStack(alignment: .leading, spacing: 12) {
         Text(
-          "Diagnostics include only version, architecture, permission, device, support, "
+          "Diagnostics include only version, architecture, permission, device, touchpad state, "
             + "backend, and bounded settings status. They never include touch data, logs, "
             + "user identity, paths, or serial numbers."
         )
@@ -303,38 +320,15 @@ private extension SupportView {
   }
 }
 
-private struct DiagnosticsDocument: FileDocument {
-  static let readableContentTypes: [UTType] = [.plainText]
-
-  let text: String
-
-  init(text: String) {
-    self.text = text
-  }
-
-  init(configuration: ReadConfiguration) throws {
-    guard
-      let data = configuration.file.regularFileContents,
-      let text = String(data: data, encoding: .utf8)
-    else {
-      throw CocoaError(.fileReadCorruptFile)
-    }
-    self.text = text
-  }
-
-  func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
-    FileWrapper(regularFileWithContents: Data(text.utf8))
-  }
-}
-
 private struct StatusValue: View {
   let title: String
   let systemImage: String
   let active: Bool
+  var warning = false
 
   var body: some View {
     Label(title, systemImage: systemImage)
-      .foregroundStyle(active ? .green : .secondary)
+      .foregroundStyle(warning ? .orange : active ? .green : .secondary)
   }
 }
 

@@ -19,6 +19,7 @@ if [[ $mode == all || $mode == swift ]]; then
     --strict \
     App \
     Helper \
+    Shared \
     Packages/T1Core/Package.swift \
     Packages/T1Core/Sources \
     Packages/T1Core/Tests
