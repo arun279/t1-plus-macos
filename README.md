@@ -23,9 +23,13 @@ T1 Plus Touchpad Support requires macOS 13 or later.
    once after Accessibility approval so macOS reports the new permission, then turn on the touchpad.
 5. Pair the T1 Plus in Bluetooth settings. Pairing before or after setup is supported.
 
+Use **Check for Updates…** in the app menu or the Updates section to check manually. Automatic
+checking and automatic download/install are separate opt-in settings in the app.
+
 The helper runs only while the touchpad is turned on. The app may also appear under Login Items because
 macOS manages the bundled helper as a background item. Touch input and diagnostics stay on the Mac;
-the app has no telemetry or network service.
+the helper has no network access. The settings app contacts only the signed GitHub Releases update
+feed while it is open and update checks are enabled or requested.
 
 To uninstall, open the app and use **Prepare for Uninstall…** before moving the application to
 Trash. That unregisters the helper and resets its settings without changing the touchpad, its
@@ -80,7 +84,8 @@ local diagnostics report and remove the helper registration and settings without
 device. The language decision and release-build evidence are recorded in
 [ADR 0001](docs/decisions/0001-use-swift-for-the-gesture-core.md). Each published release is
 Developer ID-signed, notarized, stapled, and made from an accepted draft artifact without rebuilding
-it. The release checklist includes fresh permission and service lifecycle testing, full hardware
+it. Each release also includes a signed Sparkle appcast so installed copies can update without a
+manual reinstall. The release checklist includes fresh permission and service lifecycle testing, full hardware
 behavior on macOS, and unchanged-device regression testing on Windows.
 
 ## Independence and trademarks
@@ -92,3 +97,4 @@ respective owners and are used only to identify compatibility.
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE).
+Third-party license notices are in [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).

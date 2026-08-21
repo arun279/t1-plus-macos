@@ -58,7 +58,8 @@ jobs:
           expected_assets=$(
             printf '%s\n' \
               "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg" \
-              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg.sha256" |
+              "T1-Plus-Touchpad-Support-for-macOS-$REQUESTED_VERSION.dmg.sha256" \
+              appcast.xml |
               sort
           )
           actual_assets=$(
@@ -75,7 +76,8 @@ jobs:
           gh release download "$RELEASE_TAG" --dir .build/release-download
           dmg_path=".build/release-download/T1-Plus-Touchpad-Support-for-macOS-$RELEASE_VERSION.dmg"
           checksum_path="$dmg_path.sha256"
-          [[ -f $dmg_path && -f $checksum_path ]]
+          appcast_path=.build/release-download/appcast.xml
+          [[ -f $dmg_path && -f $checksum_path && -s $appcast_path ]]
           (
             cd .build/release-download
             shasum -a 256 --check "$(basename "$checksum_path")"
@@ -84,7 +86,12 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
             "$dmg_path"
+          gh attestation verify \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
+            "$appcast_path"
           scripts/verify-release-dmg.sh "$dmg_path"
+          scripts/verify-appcast.sh "$RELEASE_VERSION" "$dmg_path" "$appcast_path"
       - name: Publish accepted release
         env:
           GH_TOKEN: ${{ github.token }}

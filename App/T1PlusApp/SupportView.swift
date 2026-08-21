@@ -1,14 +1,21 @@
 import Foundation
+import Sparkle
 import SwiftUI
 import T1Settings
 
 struct SupportView: View {
   @ObservedObject var model: T1SupportModel
+  private let updater: SPUUpdater
   @Environment(\.scenePhase)
   private var scenePhase
   @State private var diagnosticsDocument = DiagnosticsDocument(text: "")
   @State private var exportingDiagnostics = false
   @State private var confirmingUninstall = false
+
+  init(model: T1SupportModel, updater: SPUUpdater) {
+    self.model = model
+    self.updater = updater
+  }
 
   var body: some View {
     ScrollView {
@@ -20,6 +27,7 @@ struct SupportView: View {
         error
         notice
         touchpadSettings
+        UpdaterSettingsView(updater: updater)
         diagnosticsAndUninstall
         privacy
       }

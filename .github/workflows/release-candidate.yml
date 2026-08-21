@@ -151,14 +151,39 @@ jobs:
             shasum -a 256 "$(basename "$RELEASE_DMG")" > "$(basename "$checksum_path")"
           )
           printf 'RELEASE_CHECKSUM=%s\n' "$checksum_path" >> "$GITHUB_ENV"
+      - name: Generate signed update feed
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          SPARKLE_DOWNLOAD_URL_PREFIX: >-
+            https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_ED25519_PRIVATE_KEY }}
+        run: |
+          appcast_path=.build/release/appcast.xml
+          printf '%s\n' "$SPARKLE_PRIVATE_KEY" |
+            scripts/generate-appcast.sh \
+              "$RELEASE_VERSION" \
+              "$RELEASE_DMG" \
+              "$appcast_path"
+          scripts/verify-appcast.sh \
+            "$RELEASE_VERSION" \
+            "$RELEASE_DMG" \
+            "$appcast_path"
+          printf 'RELEASE_APPCAST=%s\n' "$appcast_path" >> "$GITHUB_ENV"
       - name: Attest release candidate provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: ${{ env.RELEASE_DMG }}
+          subject-path: |
+            ${{ env.RELEASE_DMG }}
+            ${{ env.RELEASE_APPCAST }}
       - name: Stage exact candidate for the draft job
         run: |
           mkdir -p .build/candidate
-          cp "$RELEASE_DMG" "$RELEASE_CHECKSUM" .build/release-notes.md .build/candidate/
+          cp \
+            "$RELEASE_DMG" \
+            "$RELEASE_CHECKSUM" \
+            "$RELEASE_APPCAST" \
+            .build/release-notes.md \
+            .build/candidate/
       - name: Transfer exact candidate within this workflow run
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -205,8 +230,9 @@ jobs:
           scripts/verify-release-metadata.sh "$RELEASE_VERSION"
           dmg_path=".build/candidate/T1-Plus-Touchpad-Support-for-macOS-$RELEASE_VERSION.dmg"
           checksum_path="$dmg_path.sha256"
+          appcast_path=.build/candidate/appcast.xml
           notes_path=.build/candidate/release-notes.md
-          [[ -f $dmg_path && -f $checksum_path && -s $notes_path ]]
+          [[ -f $dmg_path && -f $checksum_path && -s $appcast_path && -s $notes_path ]]
           (
             cd .build/candidate
             sha256sum --check "$(basename "$checksum_path")"
@@ -215,6 +241,11 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
             "$dmg_path"
+          gh attestation verify \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
+            "$appcast_path"
+          scripts/verify-appcast.sh "$RELEASE_VERSION" "$dmg_path" "$appcast_path"
           if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
             printf 'error: release already exists: %s\n' "$RELEASE_TAG" >&2
             exit 1
@@ -222,6 +253,7 @@ jobs:
           {
             printf 'RELEASE_DMG=%s\n' "$dmg_path"
             printf 'RELEASE_CHECKSUM=%s\n' "$checksum_path"
+            printf 'RELEASE_APPCAST=%s\n' "$appcast_path"
             printf 'RELEASE_NOTES=%s\n' "$notes_path"
           } >> "$GITHUB_ENV"
       - name: Create protected draft release candidate
@@ -232,6 +264,7 @@ jobs:
           gh release create "$RELEASE_TAG" \
             "$RELEASE_DMG" \
             "$RELEASE_CHECKSUM" \
+            "$RELEASE_APPCAST" \
             --draft \
             --target "$GITHUB_SHA" \
             --title "T1 Plus Touchpad Support $RELEASE_TAG" \
