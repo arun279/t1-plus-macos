@@ -29,9 +29,10 @@ unauthenticated commands from other users or processes.
 Configuration and diagnostics remain local. The on-demand diagnostics report has a fixed field
 allowlist and excludes touch data, logs, user identity, paths, and serial numbers. There is no
 telemetry. The input helper has no network access. While the settings app is open, its only network
-operation is an HTTPS request to the GitHub Releases update feed when the user requests a check or
-enables automatic checks. Sparkle verifies the signed feed and archive before extraction, and macOS
-then verifies the Developer ID signature.
+activity is HTTPS to GitHub Releases. It checks the signed feed when requested or when automatic
+checks are enabled, and downloads a signed update archive only after approval or opt-in automatic
+downloads. Sparkle verifies the signed feed and archive before extraction, and macOS then verifies
+the Developer ID signature.
 
 ## Permissions
 

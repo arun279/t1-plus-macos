@@ -28,8 +28,9 @@ checking and automatic download/install are separate opt-in settings in the app.
 
 The helper runs only while the touchpad is turned on. The app may also appear under Login Items because
 macOS manages the bundled helper as a background item. Touch input and diagnostics stay on the Mac;
-the helper has no network access. The settings app contacts only the signed GitHub Releases update
-feed while it is open and update checks are enabled or requested.
+the helper has no network access. While it is open, the settings app contacts only GitHub Releases. It
+fetches the signed update feed when checks are requested or enabled, and downloads a signed update
+archive only after approval or opt-in automatic downloads.
 
 To uninstall, open the app and use **Prepare for Uninstall…** before moving the application to
 Trash. That unregisters the helper and resets its settings without changing the touchpad, its
