@@ -16,6 +16,7 @@ cp \
   scripts/archive-release.sh \
   scripts/delete-release-candidate.sh \
   scripts/release-notes.sh \
+  scripts/verify-release-assets.sh \
   scripts/verify-release-dmg.sh \
   scripts/verify-release-history.sh \
   scripts/verify-release-metadata.sh \
@@ -134,6 +135,31 @@ expect_failure env "${release_environment[@]}" FAKE_RELEASE_TAGS=v2.0.0 \
   "$fixture/scripts/verify-release-history.sh" 1.2.3
 expect_failure env "${release_environment[@]}" FAKE_RELEASE_TAGS=v1.2.2 \
   "$fixture/scripts/verify-release-history.sh" 01.2.3
+
+cat > "$fixture/bin/gh" << 'EOF'
+#!/usr/bin/env bash
+[[ ${1:-} == release && ${2:-} == view ]] || exit 64
+printf '%s\n' "${FAKE_RELEASE_ASSETS:-}"
+EOF
+chmod +x "$fixture/bin/gh"
+release_assets=$'T1-Plus-Touchpad-Support-for-macOS-1.2.3.dmg\nT1-Plus-Touchpad-Support-for-macOS-1.2.3.dmg.sha256\nappcast.xml'
+env "${release_environment[@]}" FAKE_RELEASE_ASSETS="$release_assets" \
+  "$fixture/scripts/verify-release-assets.sh" v1.2.3 1.2.3
+expect_failure env "${release_environment[@]}" \
+  FAKE_RELEASE_ASSETS=$'T1-Plus-Touchpad-Support-for-macOS-1.2.3.dmg\nT1-Plus-Touchpad-Support-for-macOS-1.2.3.dmg.sha256' \
+  "$fixture/scripts/verify-release-assets.sh" v1.2.3 1.2.3
+expect_failure env "${release_environment[@]}" \
+  FAKE_RELEASE_ASSETS="$release_assets" \
+  "$fixture/scripts/verify-release-assets.sh" v1.2.4 1.2.3
+expect_failure env "${release_environment[@]}" \
+  FAKE_RELEASE_ASSETS="$release_assets" \
+  "$fixture/scripts/verify-release-assets.sh" v01.2.3 01.2.3
+for workflow in \
+  .github/workflows/release-candidate.yml \
+  .github/workflows/publish-release.yml \
+  .github/workflows/discard-release-candidate.yml; do
+  [[ $(grep -Fc 'scripts/verify-release-assets.sh' "$workflow") == 1 ]]
+done
 
 touch "$fixture/candidate.dmg"
 env PATH="$fixture/bin:$PATH" \

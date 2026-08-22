@@ -276,6 +276,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: v${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           gh release create "$RELEASE_TAG" \
             "$RELEASE_DMG" \
@@ -285,6 +286,7 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "T1 Plus Touchpad Support $RELEASE_TAG" \
             --notes-file "$RELEASE_NOTES"
+          scripts/verify-release-assets.sh "$RELEASE_TAG" "$RELEASE_VERSION"
 
   bootstrap_feed:
     name: release / bootstrap-update-feed
